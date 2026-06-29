@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex">
+  <title>Политика конфиденциальности</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .privacy { padding: 120px 0 80px; position: relative; z-index: 1; }
+    .privacy h1 { font-size: 2rem; margin-bottom: 24px; }
+    .privacy h2 { font-size: 1.2rem; margin: 24px 0 12px; color: var(--accent); }
+    .privacy p, .privacy li { color: var(--text-muted); margin-bottom: 12px; line-height: 1.7; }
+    .privacy ul { padding-left: 20px; margin-bottom: 16px; }
+    .privacy a { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <div class="bg-grid"></div>
+  <header class="header">
+    <div class="container header__inner">
+      <a href="index.html" class="logo"><span class="logo__text">← Назад</span></a>
+    </div>
+  </header>
+  <main class="privacy">
+    <div class="container" style="max-width:720px">
+      <h1>Политика конфиденциальности</h1>
+      <p>Настоящая политика описывает, как мы обрабатываем данные посетителей сайта. Страница необходима для соответствия требованиям Google Ads и GDPR.</p>
+
+      <h2>1. Какие данные собираются</h2>
+      <p>При переходе по ссылкам WhatsApp, Instagram или YouTube вы покидаете наш сайт. Мы не собираем персональные данные через формы на этом сайте.</p>
+
+      <h2>2. Cookies и аналитика</h2>
+      <p>Мы можем использовать Google Analytics и Google Ads для отслеживания посещений и эффективности рекламы. Эти сервисы используют cookies.</p>
+
+      <h2>3. Контактные данные</h2>
+      <p>При обращении через WhatsApp или другие мессенджеры обработка данных регулируется политикой соответствующей платформы.</p>
+
+      <h2>4. Ваши права</h2>
+      <ul>
+        <li>Запросить информацию о собранных данных</li>
+        <li>Отозвать согласие на использование cookies через настройки браузера</li>
+        <li>Связаться с нами для удаления данных</li>
+      </ul>
+
+      <h2>5. Контакты</h2>
+      <p>По вопросам конфиденциальности:</p>
+      <p>Email: <a href="mailto:gordienkodmytro9@gmail.com">gordienkodmytro9@gmail.com</a></p>
+      <p>WhatsApp: <a href="https://wa.me/message/QRZS65C6P4KGM1" id="privacy-wa">написать</a></p>
+      <p>Телефон: <a href="tel:+34643292197">+34 643 292 197</a></p>
+    </div>
+  </main>
+  <script src="js/config.js"></script>
+  <script>
+    document.getElementById('privacy-wa').href = SITE_CONFIG.whatsappUrl;
+  </script>
+</body>
+</html>

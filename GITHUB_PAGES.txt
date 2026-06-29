@@ -1,0 +1,28 @@
+@echo off
+chcp 65001 >nul
+echo.
+echo  ==========================================
+echo   ELEKTRON — публикация на GitHub Pages
+echo  ==========================================
+echo.
+echo  ШАГ 1. Создай репозиторий на github.com
+echo         Имя: electron  (или elektron)
+echo         Public, БЕЗ README
+echo.
+echo  ШАГ 2. Замени YOUR_USERNAME ниже и запусти команды:
+echo.
+echo  cd C:\ELEKTRON
+echo  git init
+echo  git add .
+echo  git commit -m "ELEKTRON landing page"
+echo  git branch -M main
+echo  git remote add origin https://github.com/YOUR_USERNAME/electron.git
+echo  git push -u origin main
+echo.
+echo  ШАГ 3. GitHub — Settings — Pages
+echo         Source: Deploy from branch
+echo         Branch: main / (root)
+echo.
+echo  Сайт будет: https://YOUR_USERNAME.github.io/electron/
+echo.
+pause

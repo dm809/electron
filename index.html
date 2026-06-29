@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="robots" content="index, follow">
+  <title></title>
+
+  <!-- Google Ads / Analytics — вставь ID в config.js -->
+  <!--
+  <script async src="https://www.googletagmanager.com/gtag/js?id=AW-XXXXXXXXX"></script>
+  -->
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="images/logo.svg" type="image/svg+xml">
+
+  <script type="application/ld+json" id="schema-json"></script>
+</head>
+<body>
+
+  <div class="bg-grid"></div>
+  <div class="bg-glow bg-glow--1"></div>
+  <div class="bg-glow bg-glow--2"></div>
+
+  <header class="header">
+    <div class="container header__inner">
+      <a href="#" class="logo">
+        <img src="images/logo.jpg" alt="ELEKTRON" class="logo__img" id="logo-img">
+        <span class="logo__text" id="brand-name">ELEKTRON</span>
+      </a>
+
+      <nav class="nav">
+        <a href="#services" data-i18n="navServices">Услуги</a>
+        <a href="#about" data-i18n="navAbout">О нас</a>
+        <a href="#contact" data-i18n="navContact">Контакты</a>
+      </nav>
+
+      <div class="header__actions">
+        <div class="lang-switch" role="group" aria-label="Language">
+          <button class="lang-switch__btn active" data-lang="ru">RU</button>
+          <button class="lang-switch__btn" data-lang="es">ES</button>
+          <button class="lang-switch__btn" data-lang="en">EN</button>
+        </div>
+        <a href="#" class="btn btn--sm btn--whatsapp header__cta gads-conversion" id="header-whatsapp" data-i18n="navWrite">Написать</a>
+      </div>
+
+      <button class="burger" aria-label="Menu" id="burger"><span></span><span></span><span></span></button>
+    </div>
+  </header>
+
+  <div class="mobile-menu" id="mobile-menu">
+    <div class="lang-switch lang-switch--mobile">
+      <button class="lang-switch__btn active" data-lang="ru">RU</button>
+      <button class="lang-switch__btn" data-lang="es">ES</button>
+      <button class="lang-switch__btn" data-lang="en">EN</button>
+    </div>
+    <a href="#services" data-i18n="navServices">Услуги</a>
+    <a href="#about" data-i18n="navAbout">О нас</a>
+    <a href="#contact" data-i18n="navContact">Контакты</a>
+    <a href="#" class="btn btn--whatsapp gads-conversion" id="mobile-whatsapp">WhatsApp</a>
+  </div>
+
+  <main>
+    <!-- HERO — главный блок для Google Ads -->
+    <section class="hero" id="top">
+      <div class="container hero__inner">
+        <div class="hero__content">
+          <div class="badge reveal">
+            <span class="badge__dot"></span>
+            <span data-i18n="badge">Принимаю заказы · Выезд на объект</span>
+          </div>
+          <h1 class="hero__title reveal" id="hero-title"></h1>
+          <p class="hero__subtitle reveal" data-i18n="heroSubtitle"></p>
+          <div class="hero__actions reveal">
+            <a href="#" class="btn btn--whatsapp btn--lg gads-conversion" id="hero-whatsapp">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.435 9.884-9.881 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+              <span data-i18n="ctaWhatsapp">Написать в WhatsApp</span>
+            </a>
+            <a href="#" class="btn btn--instagram btn--lg" id="hero-instagram" target="_blank" rel="noopener">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+              <span data-i18n="ctaInstagram">Instagram</span>
+            </a>
+            <a href="#" class="btn btn--youtube btn--lg" id="hero-youtube" target="_blank" rel="noopener">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+              <span data-i18n="ctaYoutube">YouTube</span>
+            </a>
+          </div>
+          <div class="hero__stats reveal">
+            <div class="stat">
+              <span class="stat__value" data-i18n="statVrv">VRV</span>
+              <span class="stat__label" data-i18n="statVrvLabel">Daikin, Mitsubishi, LG</span>
+            </div>
+            <div class="stat">
+              <span class="stat__value" data-i18n="statBoards">Платы</span>
+              <span class="stat__label" data-i18n="statBoardsLabel">Компонентный ремонт</span>
+            </div>
+            <div class="stat">
+              <span class="stat__value" data-i18n="statContact">24/7</span>
+              <span class="stat__label" data-i18n="statContactLabel">Связь в WhatsApp</span>
+            </div>
+          </div>
+        </div>
+        <div class="hero__visual reveal">
+          <div class="hero-card">
+            <div class="hero-card__header">
+              <span class="hero-card__status"></span>
+              <span data-i18n="cardStatus">Диагностика активна</span>
+            </div>
+            <div class="hero-card__body">
+              <div class="hero-card__photo" id="hero-photo">
+                <div class="photo-placeholder">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                  <span data-i18n="galleryPlaceholder">Фото будет добавлено</span>
+                </div>
+              </div>
+              <ul class="hero-card__list">
+                <li><span class="check">✓</span> <span data-i18n="cardItem1">Осциллограф · Мультиметр</span></li>
+                <li><span class="check">✓</span> <span data-i18n="cardItem2">Пайка BGA / SMD</span></li>
+                <li><span class="check">✓</span> <span data-i18n="cardItem3">Прошивка контроллеров</span></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PARTNERS — логотипы партнёров -->
+    <section class="partners" id="partners">
+      <div class="container">
+        <p class="partners__label reveal" data-i18n="partnersLabel">Партнёры и сотрудничество</p>
+        <div class="partners__grid reveal" id="partners-grid"></div>
+      </div>
+    </section>
+
+    <!-- SERVICES -->
+    <section class="services" id="services">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="section-tag" data-i18n="servicesTag">Чем занимаюсь</span>
+          <h2 data-i18n="servicesTitle">Услуги и направления</h2>
+          <p data-i18n="servicesDesc">Комплексный подход</p>
+        </div>
+        <div class="services__grid">
+          <article class="service-card reveal">
+            <div class="service-card__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div>
+            <h3 data-i18n="s1Title">Ремонт VRV / VRF</h3>
+            <p data-i18n="s1Desc"></p>
+            <ul><li data-i18n="s1i1"></li><li data-i18n="s1i2"></li><li data-i18n="s1i3"></li></ul>
+          </article>
+          <article class="service-card reveal">
+            <div class="service-card__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg></div>
+            <h3 data-i18n="s2Title">Ремонт плат</h3>
+            <p data-i18n="s2Desc"></p>
+            <ul><li data-i18n="s2i1"></li><li data-i18n="s2i2"></li><li data-i18n="s2i3"></li></ul>
+          </article>
+          <article class="service-card reveal">
+            <div class="service-card__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41"/></svg></div>
+            <h3 data-i18n="s3Title">Тепловые насосы</h3>
+            <p data-i18n="s3Desc"></p>
+            <ul><li data-i18n="s3i1"></li><li data-i18n="s3i2"></li><li data-i18n="s3i3"></li></ul>
+          </article>
+          <article class="service-card reveal">
+            <div class="service-card__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+            <h3 data-i18n="s4Title">Электрика</h3>
+            <p data-i18n="s4Desc"></p>
+            <ul><li data-i18n="s4i1"></li><li data-i18n="s4i2"></li><li data-i18n="s4i3"></li></ul>
+          </article>
+          <article class="service-card reveal">
+            <div class="service-card__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+            <h3 data-i18n="s5Title">Защита от перенапряжений</h3>
+            <p data-i18n="s5Desc"></p>
+            <ul><li data-i18n="s5i1"></li><li data-i18n="s5i2"></li><li data-i18n="s5i3"></li></ul>
+          </article>
+          <article class="service-card reveal">
+            <div class="service-card__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></div>
+            <h3 data-i18n="s6Title">Диагностика</h3>
+            <p data-i18n="s6Desc"></p>
+            <ul><li data-i18n="s6i1"></li><li data-i18n="s6i2"></li><li data-i18n="s6i3"></li></ul>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- GALLERY placeholder -->
+    <section class="gallery" id="gallery">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="section-tag" data-i18n="galleryTag">Примеры работ</span>
+          <h2 data-i18n="galleryTitle">Фото и видео</h2>
+          <p data-i18n="galleryDesc">Скоро здесь будут ваши работы</p>
+        </div>
+        <div class="gallery__grid" id="gallery-grid"></div>
+      </div>
+    </section>
+
+    <!-- ABOUT -->
+    <section class="about" id="about">
+      <div class="container about__inner">
+        <div class="about__content reveal">
+          <span class="section-tag" data-i18n="aboutTag">Почему я</span>
+          <h2 data-i18n="aboutTitle">Инженерный подход</h2>
+          <p data-i18n="aboutDesc"></p>
+          <div class="features">
+            <div class="feature"><div class="feature__num">01</div><div><h4 data-i18n="f1Title"></h4><p data-i18n="f1Desc"></p></div></div>
+            <div class="feature"><div class="feature__num">02</div><div><h4 data-i18n="f2Title"></h4><p data-i18n="f2Desc"></p></div></div>
+            <div class="feature"><div class="feature__num">03</div><div><h4 data-i18n="f3Title"></h4><p data-i18n="f3Desc"></p></div></div>
+          </div>
+        </div>
+        <div class="about__brands reveal">
+          <span class="section-tag" data-i18n="brandsTag">Марки</span>
+          <div class="brands-grid" id="brands-grid"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ — важно для Google Ads Quality Score -->
+    <section class="faq" id="faq">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="section-tag" data-i18n="faqTag">Вопросы</span>
+          <h2 data-i18n="faqTitle">Частые вопросы</h2>
+        </div>
+        <div class="faq__list">
+          <details class="faq__item reveal"><summary data-i18n="faq1q"></summary><p data-i18n="faq1a"></p></details>
+          <details class="faq__item reveal"><summary data-i18n="faq2q"></summary><p data-i18n="faq2a"></p></details>
+          <details class="faq__item reveal"><summary data-i18n="faq3q"></summary><p data-i18n="faq3a"></p></details>
+          <details class="faq__item reveal"><summary data-i18n="faq4q"></summary><p data-i18n="faq4a"></p></details>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTACT + language badges -->
+    <section class="contact" id="contact">
+      <div class="container">
+        <div class="contact__box reveal">
+          <div class="contact__text">
+            <span class="section-tag" data-i18n="contactTag">Связаться</span>
+            <h2 data-i18n="contactTitle">Нужен ремонт?</h2>
+            <p data-i18n="contactDesc"></p>
+            <div class="speak-langs">
+              <span class="speak-langs__label" data-i18n="speakLabel">Общаюсь на:</span>
+              <div class="speak-langs__tags" id="speak-tags"></div>
+            </div>
+          </div>
+          <div class="contact__buttons">
+            <a href="#" class="contact-btn contact-btn--whatsapp gads-conversion" id="contact-whatsapp">
+              <div class="contact-btn__icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.098-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.435 9.884-9.881 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></div>
+              <div class="contact-btn__info"><strong data-i18n="contactWhatsapp">WhatsApp</strong><span data-i18n="contactWhatsappSub"></span></div>
+              <svg class="contact-btn__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </a>
+            <a href="#" class="contact-btn contact-btn--instagram" id="contact-instagram" target="_blank" rel="noopener">
+              <div class="contact-btn__icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg></div>
+              <div class="contact-btn__info"><strong data-i18n="contactInstagram">Instagram</strong><span data-i18n="contactInstagramSub"></span></div>
+              <svg class="contact-btn__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </a>
+            <a href="#" class="contact-btn contact-btn--youtube" id="contact-youtube" target="_blank" rel="noopener">
+              <div class="contact-btn__icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></div>
+              <div class="contact-btn__info"><strong data-i18n="contactYoutube">YouTube</strong><span data-i18n="contactYoutubeSub"></span></div>
+              <svg class="contact-btn__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </a>
+            <a href="mailto:gordienkodmytro9@gmail.com" class="contact-btn contact-btn--email" id="contact-email">
+              <div class="contact-btn__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 6l-10 7L2 6"/></svg></div>
+              <div class="contact-btn__info"><strong data-i18n="contactEmail">Email</strong><span data-i18n="contactEmailSub"></span></div>
+              <svg class="contact-btn__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </a>
+            <a href="tel:+34643292197" class="contact-btn contact-btn--phone" id="contact-phone">
+              <div class="contact-btn__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg></div>
+              <div class="contact-btn__info"><strong data-i18n="contactPhone">Телефон</strong><span data-i18n="contactPhoneSub"></span></div>
+              <svg class="contact-btn__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sticky CTA bar for mobile / Google Ads -->
+    <div class="sticky-cta" id="sticky-cta">
+      <a href="#" class="btn btn--whatsapp gads-conversion" id="sticky-whatsapp">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.435 9.884-9.881 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        <span data-i18n="ctaWhatsapp">WhatsApp</span>
+      </a>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer__inner">
+      <p>&copy; 2026 <span id="footer-brand">ELEKTRON</span> · Dmitrii — <span data-i18n="footerCopy">Ремонт VRV</span></p>
+      <div class="footer__links">
+        <a href="#" id="footer-whatsapp" class="gads-conversion">WhatsApp</a>
+        <a href="#" id="footer-instagram" target="_blank" rel="noopener">Instagram</a>
+        <a href="#" id="footer-youtube" target="_blank" rel="noopener">YouTube</a>
+        <a href="privacy.html" data-i18n="privacy">Политика конфиденциальности</a>
+      </div>
+    </div>
+  </footer>
+
+  <a href="#" class="fab fab--whatsapp gads-conversion" id="fab-whatsapp" aria-label="WhatsApp">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.435 9.884-9.881 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+  </a>
+
+  <script src="js/config.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
