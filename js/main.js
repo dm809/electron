@@ -37,6 +37,18 @@
 
   window.__siteT = t;
 
+  function siteBase() {
+    if (location.protocol === 'file:') return '';
+    if (SITE_CONFIG.basePath) return SITE_CONFIG.basePath;
+    const m = location.pathname.match(/^\/([^/]+)\//);
+    return m ? `/${m[1]}/` : '/';
+  }
+
+  function asset(path) {
+    if (!path || /^https?:\/\//.test(path)) return path;
+    return `${siteBase()}${path.replace(/^\//, '')}`;
+  }
+
   function buildWhatsappUrl() {
     if (SITE_CONFIG.whatsappUrl) return SITE_CONFIG.whatsappUrl;
     const msg = (I18N[currentLang] || I18N.ru).waMessage;
@@ -129,9 +141,10 @@
     if (!visible) return;
 
     grid.innerHTML = partners.map((p) => {
+      const logoSrc = asset(p.logo);
       const inner = `
         <div class="partner-card__logo">
-          <img src="${p.logo}" alt="${p.name}" loading="lazy"
+          <img src="${logoSrc}" alt="${p.name}" loading="lazy"
                onerror="this.closest('.partner-card').classList.add('partner-card--placeholder')">
           <span class="partner-card__placeholder">${t('partnerPlaceholder')}</span>
         </div>
@@ -150,9 +163,10 @@
 
     grid.innerHTML = SITE_CONFIG.photos.gallery.map((photo) => {
       const alt = photo.altKey ? t(photo.altKey) : (photo.alt || '');
+      const src = asset(photo.src);
       return `
       <div class="gallery__item">
-        <img src="${photo.src}" alt="${alt}" loading="lazy"
+        <img src="${src}" alt="${alt}" loading="lazy"
              onerror="this.parentElement.classList.add('gallery__item--placeholder')">
         <div class="gallery__placeholder">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
@@ -167,7 +181,7 @@
     if (!container || !SITE_CONFIG.photos.hero) return;
 
     const img = new Image();
-    img.src = SITE_CONFIG.photos.hero;
+    img.src = asset(SITE_CONFIG.photos.hero);
     img.alt = SITE_CONFIG.brandName;
     img.onload = () => {
       container.innerHTML = '';
@@ -287,9 +301,9 @@
     if (brandEl) brandEl.textContent = SITE_CONFIG.brandName;
     if (footerBrand) footerBrand.textContent = SITE_CONFIG.brandName;
     if (logoImg && SITE_CONFIG.logo) {
-      logoImg.src = SITE_CONFIG.logo;
+      logoImg.src = asset(SITE_CONFIG.logo);
       logoImg.onerror = () => {
-        if (SITE_CONFIG.logoFallback) logoImg.src = SITE_CONFIG.logoFallback;
+        if (SITE_CONFIG.logoFallback) logoImg.src = asset(SITE_CONFIG.logoFallback);
       };
     }
   }
