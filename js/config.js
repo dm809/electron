@@ -42,12 +42,13 @@ const SITE_CONFIG = {
   ],
 
   // Партнёры — секция скрыта, пока не добавишь логотипы (showPartners: true)
-  showPartners: false,
+  showPartners: true,
   partners: [
-    { name: 'Партнёр 1', logo: 'images/partners/partner-1.png', url: '' },
-    { name: 'Партнёр 2', logo: 'images/partners/partner-2.png', url: '' },
-    { name: 'Партнёр 3', logo: 'images/partners/partner-3.png', url: '' },
-    { name: 'Партнёр 4', logo: 'images/partners/partner-4.png', url: '' },
+    {
+      name: 'DOMYKA',
+      logo: 'images/partners/domyka.png',
+      url: 'https://domyka.es/',
+    },
   ],
 
   logo: 'images/logo.jpg',
