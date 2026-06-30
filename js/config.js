@@ -41,8 +41,8 @@ const SITE_CONFIG = {
     'Rheem', 'Goodman', 'Cooper & Hunter', 'Aux',
   ],
 
-  // Логотипы партнёров — положи файлы в images/partners/
-  // url — ссылка на сайт партнёра (оставь '' если без ссылки)
+  // Партнёры — секция скрыта, пока не добавишь логотипы (showPartners: true)
+  showPartners: false,
   partners: [
     { name: 'Партнёр 1', logo: 'images/partners/partner-1.png', url: '' },
     { name: 'Партнёр 2', logo: 'images/partners/partner-2.png', url: '' },
@@ -72,4 +72,10 @@ const SITE_CONFIG = {
       { src: 'images/gallery-14.jpg', altKey: 'gal14' },
     ],
   },
+
+  // Опубликованные отзывы — добавляй сюда после проверки в WhatsApp
+  // rating: от 1 до 5, date: '2026-06-30'
+  reviews: [
+    // { name: 'Алексей', rating: 5, text: 'Отличный ремонт платы Daikin!', date: '2026-06-15' },
+  ],
 };

@@ -35,6 +35,8 @@
     return text;
   }
 
+  window.__siteT = t;
+
   function buildWhatsappUrl() {
     if (SITE_CONFIG.whatsappUrl) return SITE_CONFIG.whatsappUrl;
     const msg = (I18N[currentLang] || I18N.ru).waMessage;
@@ -68,6 +70,10 @@
     renderPartners();
     renderGallery();
     updateSchema();
+    if (window.ReviewsModule) {
+      window.ReviewsModule.render();
+      window.ReviewsModule.updatePlaceholders();
+    }
   }
 
   function updateLinks() {
@@ -112,10 +118,17 @@
   }
 
   function renderPartners() {
+    const section = document.getElementById('partners');
     const grid = document.getElementById('partners-grid');
-    if (!grid || !SITE_CONFIG.partners) return;
+    if (!grid) return;
 
-    grid.innerHTML = SITE_CONFIG.partners.map((p) => {
+    const partners = SITE_CONFIG.partners || [];
+    const visible = SITE_CONFIG.showPartners && partners.length > 0;
+
+    if (section) section.hidden = !visible;
+    if (!visible) return;
+
+    grid.innerHTML = partners.map((p) => {
       const inner = `
         <div class="partner-card__logo">
           <img src="${p.logo}" alt="${p.name}" loading="lazy"
@@ -289,4 +302,5 @@
   loadHeroPhoto();
   applyTranslations();
   initGoogleAds();
+  if (window.ReviewsModule) window.ReviewsModule.init();
 })();
