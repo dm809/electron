@@ -20,8 +20,8 @@ const SITE_CONFIG = {
 
   youtubeUrl: 'https://youtube.com/@electronica-u1f',
 
-  // Для GitHub Pages: /elektron/ — оставь как есть. Локально (file://) не мешает.
-  basePath: '/elektron/',
+  // GitHub Pages: https://dm809.github.io/electron/
+  basePath: '/electron/',
 
   city: 'Costa del Sol',
   region: 'Andalucía, España',

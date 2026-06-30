@@ -1,0 +1,20 @@
+═══════════════════════════════════════
+  ELEKTRON — куда класть фото
+═══════════════════════════════════════
+
+logo.jpg          — логотип (electron на процессоре)
+                  — показывается в шапке И в большом окне
+
+gallery-1.jpg     — копия логотипа (галерея)
+
+gallery-2 … 7     — фото работ (платы, VRV, диагностика)
+
+gallery-8 … 14    — ВАЖНО: фото команды в футболках ELEKTRON!
+                    Скопируй сюда и назови:
+                    gallery-8.jpg, gallery-9.jpg … gallery-14.jpg
+
+После добавления:
+  cd C:\ELEKTRON
+  git add images/
+  git commit -m "foto komandy ELEKTRON"
+  git push
