@@ -58,14 +58,22 @@ const SITE_CONFIG = {
   logoFallback: 'images/logo.svg',
 
   photos: {
-    hero: 'images/gallery-2.jpg',
+    hero: 'images/logo.jpg',
     gallery: [
+      { src: 'images/gallery-1.jpg', altKey: 'gal1' },
       { src: 'images/gallery-2.jpg', altKey: 'gal2' },
       { src: 'images/gallery-3.jpg', altKey: 'gal3' },
       { src: 'images/gallery-4.jpg', altKey: 'gal4' },
       { src: 'images/gallery-5.jpg', altKey: 'gal5' },
       { src: 'images/gallery-6.jpg', altKey: 'gal6' },
       { src: 'images/gallery-7.jpg', altKey: 'gal7' },
+      { src: 'images/gallery-8.jpg', altKey: 'gal8' },
+      { src: 'images/gallery-9.jpg', altKey: 'gal9' },
+      { src: 'images/gallery-10.jpg', altKey: 'gal10' },
+      { src: 'images/gallery-11.jpg', altKey: 'gal11' },
+      { src: 'images/gallery-12.jpg', altKey: 'gal12' },
+      { src: 'images/gallery-13.jpg', altKey: 'gal13' },
+      { src: 'images/gallery-14.jpg', altKey: 'gal14' },
     ],
   },
 
