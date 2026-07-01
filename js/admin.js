@@ -1,8 +1,9 @@
 (function () {
   'use strict';
 
+  const PIN_KEY = 'elektron-admin-pin';
   let currentTab = 'pending';
-  let session = null;
+  let adminPin = '';
 
   const els = {
     setup: document.getElementById('admin-setup'),
@@ -20,6 +21,20 @@
 
   function db() {
     return SupabaseReviews.getClient();
+  }
+
+  function getSavedPin() {
+    return sessionStorage.getItem(PIN_KEY) || '';
+  }
+
+  function savePin(pin) {
+    sessionStorage.setItem(PIN_KEY, pin);
+    adminPin = pin;
+  }
+
+  function clearPin() {
+    sessionStorage.removeItem(PIN_KEY);
+    adminPin = '';
   }
 
   function starsHtml(rating) {
@@ -58,62 +73,89 @@
     els.loginError.hidden = !msg;
   }
 
+  function translateError(error) {
+    const msg = (error?.message || '').toLowerCase();
+    if (msg.includes('invalid pin')) {
+      return 'Неверный PIN-код. По умолчанию: 472891 (если запускал supabase-admin-pin.sql)';
+    }
+    if (msg.includes('function') && msg.includes('does not exist')) {
+      return 'Запусти SQL из файла supabase-admin-pin.sql в Supabase → SQL Editor';
+    }
+    if (msg.includes('reviews') && msg.includes('does not exist')) {
+      return 'Запусти SQL из файла supabase-setup.sql в Supabase → SQL Editor';
+    }
+    return error?.message || 'Ошибка подключения';
+  }
+
+  async function verifyPin(pin) {
+    const { data, error } = await db().rpc('admin_check_pin', { p_pin: pin });
+    if (error) throw error;
+    return Boolean(data);
+  }
+
   async function init() {
     if (!SupabaseReviews.isConfigured()) {
       showPanel('setup');
       return;
     }
 
-    const client = db();
-    const { data } = await client.auth.getSession();
-    session = data.session;
-
-    if (session) {
-      showPanel('dashboard');
-      await loadReviews();
-    } else {
-      showPanel('login');
-    }
-  }
-
-  async function login(email, password) {
-    showError('');
-    const { data, error } = await db().auth.signInWithPassword({ email, password });
-
-    if (error) {
-      showError('Неверный email или пароль');
-      return;
+    const saved = getSavedPin();
+    if (saved) {
+      try {
+        const ok = await verifyPin(saved);
+        if (ok) {
+          adminPin = saved;
+          showPanel('dashboard');
+          await loadReviews();
+          return;
+        }
+        clearPin();
+      } catch {
+        clearPin();
+      }
     }
 
-    session = data.session;
-    showPanel('dashboard');
-    await loadReviews();
-  }
-
-  async function logout() {
-    await db().auth.signOut();
-    session = null;
     showPanel('login');
   }
 
-  async function fetchReviews(status) {
-    const { data, error } = await db()
-      .from('reviews')
-      .select('*')
-      .eq('status', status)
-      .order('created_at', { ascending: false });
+  async function login(pin) {
+    showError('');
+    const cleanPin = String(pin).trim();
 
-    if (error) throw error;
-    return data || [];
+    if (!cleanPin) {
+      showError('Введите PIN-код');
+      return;
+    }
+
+    try {
+      const ok = await verifyPin(cleanPin);
+      if (!ok) {
+        showError('Неверный PIN-код. По умолчанию: 472891');
+        return;
+      }
+      savePin(cleanPin);
+      showPanel('dashboard');
+      await loadReviews();
+    } catch (err) {
+      console.error(err);
+      showError(translateError(err));
+    }
   }
 
-  async function updatePendingCount() {
-    try {
-      const pending = await fetchReviews('pending');
-      els.count.textContent = `${pending.length} ${pluralReviews(pending.length)}`;
-    } catch {
-      els.count.textContent = '—';
-    }
+  function logout() {
+    clearPin();
+    showPanel('login');
+    showError('');
+    document.getElementById('admin-pin').value = '';
+  }
+
+  async function fetchReviews(status) {
+    const { data, error } = await db().rpc('admin_get_reviews', {
+      p_pin: adminPin,
+      p_status: status,
+    });
+    if (error) throw error;
+    return data || [];
   }
 
   function pluralReviews(n) {
@@ -161,7 +203,8 @@
       if (currentTab === 'pending') {
         els.count.textContent = `${reviews.length} ${pluralReviews(reviews.length)}`;
       } else {
-        await updatePendingCount();
+        const pending = await fetchReviews('pending');
+        els.count.textContent = `${pending.length} ${pluralReviews(pending.length)}`;
       }
 
       if (!reviews.length) {
@@ -173,32 +216,45 @@
       els.list.innerHTML = reviews.map(renderCard).join('');
     } catch (err) {
       console.error(err);
-      els.list.innerHTML = '<p class="admin__error">Ошибка загрузки. Проверь настройки Supabase.</p>';
+      if ((err?.message || '').toLowerCase().includes('invalid pin')) {
+        logout();
+        showError('Сессия истекла — введите PIN снова');
+        return;
+      }
+      els.list.innerHTML = `<p class="admin__error">${escapeHtml(translateError(err))}</p>`;
     }
   }
 
   async function approveReview(id) {
-    const { error } = await db().from('reviews').update({ status: 'approved' }).eq('id', id);
+    const { error } = await db().rpc('admin_set_status', {
+      p_pin: adminPin,
+      p_id: id,
+      p_status: 'approved',
+    });
     if (error) throw error;
   }
 
   async function rejectReview(id) {
-    const { error } = await db().from('reviews').update({ status: 'rejected' }).eq('id', id);
+    const { error } = await db().rpc('admin_set_status', {
+      p_pin: adminPin,
+      p_id: id,
+      p_status: 'rejected',
+    });
     if (error) throw error;
   }
 
   async function deleteReview(id) {
     if (!confirm('Удалить этот отзыв навсегда?')) return;
-    const { error } = await db().from('reviews').delete().eq('id', id);
+    const { error } = await db().rpc('admin_delete_review', {
+      p_pin: adminPin,
+      p_id: id,
+    });
     if (error) throw error;
   }
 
   els.loginForm.addEventListener('submit', (e) => {
     e.preventDefault();
-    login(
-      document.getElementById('admin-email').value.trim(),
-      document.getElementById('admin-password').value
-    );
+    login(document.getElementById('admin-pin').value);
   });
 
   els.logoutBtn.addEventListener('click', logout);
@@ -226,7 +282,7 @@
       await loadReviews();
     } catch (err) {
       console.error(err);
-      alert('Не удалось выполнить действие');
+      alert(translateError(err));
     } finally {
       btn.disabled = false;
     }
