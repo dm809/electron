@@ -146,14 +146,20 @@
       }
 
       await checkSupabase();
-      await publishManual(params.name, params.rating, params.text);
-      clearUrlParams();
-      showPanel('dashboard');
-      currentTab = 'approved';
-      els.tabs.forEach((t) => t.classList.toggle('admin__tab--active', t.dataset.tab === 'approved'));
-      alert('✓ Отзыв опубликован! Обнови главную страницу (Ctrl+F5).');
-      await loadReviews();
-      return true;
+      try {
+        const result = await publishManual(params.name, params.rating, params.text);
+        clearUrlParams();
+        showPanel('dashboard');
+        currentTab = 'approved';
+        els.tabs.forEach((t) => t.classList.toggle('admin__tab--active', t.dataset.tab === 'approved'));
+        showPublishedAlert(result.scope);
+        await loadReviews();
+        return true;
+      } catch (err) {
+        showPanel('dashboard');
+        showWarn(translateError(err));
+        return false;
+      }
     }
 
     if (params.approveId) {
@@ -175,12 +181,12 @@
         p_pin: adminPin,
         p_id: params.approveId,
         p_status: 'approved',
-      }, 5000);
+      }, 8000);
       clearUrlParams();
       showPanel('dashboard');
       currentTab = 'approved';
       els.tabs.forEach((t) => t.classList.toggle('admin__tab--active', t.dataset.tab === 'approved'));
-      alert('✓ Отзыв опубликован! Обнови главную страницу (Ctrl+F5).');
+      showPublishedAlert('global');
       await loadReviews();
       return true;
     }
@@ -194,7 +200,7 @@
       return false;
     }
     sessionStorage.removeItem('elektron-supabase-skip');
-    const result = await SupabaseReviews.testConnection(5000);
+    const result = await SupabaseReviews.testConnection(8000);
     supabaseOk = result.ok;
     return supabaseOk;
   }
@@ -404,23 +410,30 @@
       date: new Date().toISOString(),
     };
 
-    if (supabaseOk) {
+    if (SupabaseReviews.isConfigured()) {
       try {
-        await SupabaseReviews.rpc('admin_publish_review', {
-          p_pin: adminPin,
-          p_name: name,
-          p_rating: rating,
-          p_text: text,
-        }, 5000);
-        return;
+        await SupabaseReviews.publishApproved(name, rating, text, adminPin, 8000);
+        return { scope: 'global' };
       } catch (err) {
-        console.warn('RPC publish failed, saving locally:', err);
+        console.warn('Supabase publish failed:', err);
+        throw new Error('База не отвечает. Запусти supabase-setup.sql и supabase-admin-pin.sql в Supabase SQL Editor.');
       }
     }
 
     const list = loadLocalApproved();
     list.unshift(review);
     saveLocalApproved(list.slice(0, 100));
+    return { scope: 'local' };
+  }
+
+  function showPublishedAlert(scope) {
+    const siteUrl = `${location.origin}${(SITE_CONFIG.basePath || '/electron/').replace(/\/?$/, '/')}index.html`;
+    if (scope === 'global') {
+      alert(`✓ Отзыв опубликован для ВСЕХ!\n\nОткрой сайт и нажми Ctrl+F5:\n${siteUrl}`);
+      window.open(siteUrl, '_blank');
+      return;
+    }
+    alert(`Отзыв сохранён только на этом устройстве.\nНастрой Supabase — тогда все увидят отзывы.`);
   }
 
   els.loginForm.addEventListener('submit', (e) => {
@@ -440,10 +453,10 @@
 
       btn.disabled = true;
       try {
-        await publishManual(name, rating, text);
+        const result = await publishManual(name, rating, text);
         els.manualForm.reset();
         document.getElementById('manual-rating').value = '5';
-        alert('Отзыв опубликован! Обнови главную страницу сайта.');
+        showPublishedAlert(result.scope);
         currentTab = 'approved';
         els.tabs.forEach((t) => t.classList.toggle('admin__tab--active', t.dataset.tab === 'approved'));
         await loadReviews();

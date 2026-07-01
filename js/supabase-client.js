@@ -1,9 +1,7 @@
 (function () {
   'use strict';
 
-  let client = null;
-  const DEFAULT_TIMEOUT = 4000;
-  const SKIP_KEY = 'elektron-supabase-skip';
+  const DEFAULT_TIMEOUT = 8000;
 
   function cfg() {
     return SITE_CONFIG.supabase || {};
@@ -11,35 +9,16 @@
 
   function isConfigured() {
     const c = cfg();
-    return Boolean(c.url && (c.anonKey || c.publishableKey));
+    return Boolean(c.url && c.anonKey);
   }
 
   function getApiKey() {
-    const c = cfg();
-    return c.anonKey || c.publishableKey || '';
-  }
-
-  function shouldUse() {
-    if (!isConfigured()) return false;
-    if (cfg().enabled === false) return false;
-    if (sessionStorage.getItem(SKIP_KEY) === '1') return false;
-    return true;
-  }
-
-  function markSkip() {
-    sessionStorage.setItem(SKIP_KEY, '1');
-  }
-
-  function withTimeout(promise, ms = DEFAULT_TIMEOUT) {
-    return Promise.race([
-      promise,
-      new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('timeout')), ms);
-      }),
-    ]);
+    return cfg().anonKey || '';
   }
 
   async function restFetch(path, options = {}, timeoutMs = DEFAULT_TIMEOUT) {
+    if (!isConfigured()) throw new Error('Supabase not configured');
+
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
     const key = getApiKey();
@@ -69,34 +48,23 @@
     }
   }
 
-  function getClient() {
-    if (!shouldUse() || !window.supabase) return null;
-    if (!client) {
-      client = window.supabase.createClient(cfg().url, getApiKey());
-    }
-    return client;
-  }
-
   async function testConnection(timeoutMs = DEFAULT_TIMEOUT) {
-    if (!shouldUse()) return { ok: false, reason: 'disabled' };
+    if (!isConfigured()) return { ok: false, reason: 'not_configured' };
 
     try {
       await restFetch('/rest/v1/reviews?select=id&limit=1', { method: 'GET' }, timeoutMs);
       return { ok: true };
     } catch (err) {
       const msg = (err?.message || String(err)).toLowerCase();
-      if (msg.includes('abort') || msg.includes('timeout')) {
-        markSkip();
-        return { ok: false, reason: 'timeout' };
-      }
-      if (msg.includes('failed to fetch') || msg.includes('network')) {
-        markSkip();
-        return { ok: false, reason: 'network' };
-      }
       if (msg.includes('42p01') || msg.includes('does not exist')) {
         return { ok: false, reason: 'no_table' };
       }
-      markSkip();
+      if (msg.includes('abort') || msg.includes('timeout')) {
+        return { ok: false, reason: 'timeout' };
+      }
+      if (msg.includes('failed to fetch') || msg.includes('network')) {
+        return { ok: false, reason: 'network' };
+      }
       return { ok: false, reason: 'api_error', message: err?.message };
     }
   }
@@ -140,16 +108,35 @@
     }, timeoutMs);
   }
 
+  /** Публикация в базу — RPC или insert+approve */
+  async function publishApproved(name, rating, text, pin, timeoutMs = DEFAULT_TIMEOUT) {
+    try {
+      await rpc('admin_publish_review', {
+        p_pin: pin,
+        p_name: name,
+        p_rating: rating,
+        p_text: text,
+      }, timeoutMs);
+      return { ok: true, method: 'rpc' };
+    } catch (err) {
+      const row = await insertReview({ name, rating, text }, timeoutMs);
+      if (!row?.id) throw err;
+      await rpc('admin_set_status', {
+        p_pin: pin,
+        p_id: row.id,
+        p_status: 'approved',
+      }, timeoutMs);
+      return { ok: true, method: 'insert+approve', id: row.id };
+    }
+  }
+
   window.SupabaseReviews = {
     isConfigured,
-    shouldUse,
     getApiKey,
-    getClient,
-    withTimeout,
     testConnection,
     insertReview,
     fetchApproved,
     rpc,
-    markSkip,
+    publishApproved,
   };
 })();

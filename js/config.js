@@ -86,7 +86,6 @@ const SITE_CONFIG = {
   supabase: {
     url: 'https://cxqiceminxlsigoibhlh.supabase.co',
     anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN4cWljZW1pbmxzaWdvaXViaGxoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI5Mjg5NDQsImV4cCI6MjA5ODUwNDk0NH0.W4S4EWhjWfQWHzAKSDb0ryZY2TUJML37WZccKvnUz5w',
-    publishableKey: 'sb_publishable_BMKU7FvUuZ7pjVDhnSXGeg_uFZ72wF1',
   },
 
   // PIN для входа в admin.html

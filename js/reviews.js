@@ -49,10 +49,29 @@
     }
   }
 
+  function reviewKey(r) {
+    return `${r.name}|${r.rating}|${r.text}`.toLowerCase();
+  }
+
+  function mergeApproved(remote, local, config) {
+    const seen = new Set();
+    const out = [];
+
+    [...remote, ...local, ...config].forEach((r) => {
+      if (!r || !r.name || !r.text) return;
+      const key = reviewKey(r);
+      if (seen.has(key)) return;
+      seen.add(key);
+      out.push({ ...r, _pending: false });
+    });
+
+    return out;
+  }
+
   function buildApprovedList() {
     const local = loadLocalApproved();
     const config = SITE_CONFIG.reviews || [];
-    return [...local, ...config].map((r) => ({ ...r, _pending: false }));
+    return mergeApproved([], local, config);
   }
 
   function paintReviews(all) {
@@ -84,10 +103,10 @@
 
     if (!window.SupabaseReviews || !SupabaseReviews.isConfigured()) return;
 
-    SupabaseReviews.fetchApproved(5000)
+    SupabaseReviews.fetchApproved(8000)
       .then((remote) => {
-        if (!remote.length) return;
-        paintReviews(remote.map((r) => ({ ...r, _pending: false })));
+        const merged = mergeApproved(remote, loadLocalApproved(), SITE_CONFIG.reviews || []);
+        paintReviews(merged);
       })
       .catch(() => {});
   }
@@ -101,10 +120,7 @@
 
   function buildApproveUrl(reviewId) {
     const pin = SITE_CONFIG.adminLocalPin || '472891';
-    if (reviewId) {
-      return `${adminBaseUrl()}admin.html?approve=${encodeURIComponent(reviewId)}&pin=${encodeURIComponent(pin)}`;
-    }
-    return `${adminBaseUrl()}admin.html`;
+    return `${adminBaseUrl()}admin.html?approve=${encodeURIComponent(reviewId)}&pin=${encodeURIComponent(pin)}`;
   }
 
   function buildPublishUrl(review) {
@@ -128,25 +144,21 @@
     const publishUrl = buildPublishUrl(review);
     const mainLink = approveUrl || publishUrl;
 
-    const payload = {
-      _subject: '⭐ Новый отзыв ELEKTRON — нажми ОПУБЛИКОВАТЬ',
-      _template: 'table',
-      _captcha: 'false',
-      name: review.name,
-      rating: `${stars} (${review.rating}/5)`,
-      message: review.text,
-      '👉 ОПУБЛИКОВАТЬ (нажми эту ссылку)': mainLink,
-      'Запасная ссылка': publishUrl,
-      instructions: 'Нажми «ОПУБЛИКОВАТЬ» в письме — откроется сайт и отзыв появится на elektron.',
-    };
-
     try {
-      const res = await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(email)}`, {
+      await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(email)}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          _subject: '⭐ Новый отзыв ELEKTRON — нажми ОПУБЛИКОВАТЬ',
+          _template: 'table',
+          _captcha: 'false',
+          name: review.name,
+          rating: `${stars} (${review.rating}/5)`,
+          message: review.text,
+          '👉 ОПУБЛИКОВАТЬ (нажми эту ссылку)': mainLink,
+          'Запасная ссылка': publishUrl,
+        }),
       });
-      if (!res.ok) console.warn('Email notify HTTP', res.status);
     } catch (err) {
       console.warn('Email notify failed:', err);
     }
@@ -157,7 +169,7 @@
 
     if (window.SupabaseReviews && SupabaseReviews.isConfigured()) {
       try {
-        const row = await SupabaseReviews.insertReview(review, 6000);
+        const row = await SupabaseReviews.insertReview(review, 8000);
         if (row && row.id) reviewId = row.id;
       } catch (err) {
         console.warn('Supabase insert failed:', err);
@@ -286,6 +298,7 @@
     initReviewForm();
     renderReviews();
     updateReviewPlaceholders();
+    setInterval(renderReviews, 45000);
   }
 
   window.ReviewsModule = {
