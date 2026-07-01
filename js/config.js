@@ -83,7 +83,7 @@ const SITE_CONFIG = {
   // ── Модерация отзывов (без WhatsApp) ──
   // Инструкция: supabase-setup.sql
   supabase: {
-    url: '',
-    anonKey: '',
+    url: 'https://cxqiceminxlsigoibhlh.supabase.co',
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN4cWljZW1pbmxzaWdvaXViaGxoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI5Mjg5NDQsImV4cCI6MjA5ODUwNDk0NH0.W4S4EWhjWfQWHzAKSDb0ryZY2TUJML37WZccKvnUz5w',
   },
 };
