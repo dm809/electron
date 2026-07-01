@@ -102,11 +102,11 @@
   }
 
   async function insertReview(review, timeoutMs = DEFAULT_TIMEOUT) {
-    return restFetch('/rest/v1/reviews', {
+    const data = await restFetch('/rest/v1/reviews', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Prefer: 'return=minimal',
+        Prefer: 'return=representation',
       },
       body: JSON.stringify({
         name: review.name,
@@ -115,6 +115,7 @@
         status: 'pending',
       }),
     }, timeoutMs);
+    return Array.isArray(data) ? data[0] : data;
   }
 
   async function fetchApproved(timeoutMs = DEFAULT_TIMEOUT) {

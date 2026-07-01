@@ -113,6 +113,81 @@
     return error?.message || 'Ошибка';
   }
 
+  function getUrlParams() {
+    const p = new URLSearchParams(location.search);
+    return {
+      approveId: p.get('approve'),
+      pin: p.get('pin'),
+      pub: p.get('pub') === '1',
+      name: p.get('name'),
+      rating: Number(p.get('r') || p.get('rating') || 5),
+      text: p.get('text'),
+    };
+  }
+
+  function clearUrlParams() {
+    history.replaceState({}, '', 'admin.html');
+  }
+
+  async function tryAutoActionFromEmail() {
+    const params = getUrlParams();
+
+    if (params.pin && verifyPin(params.pin)) {
+      adminPin = params.pin.trim();
+      savePin(adminPin);
+    }
+
+    if (params.pub && params.name && params.text) {
+      if (!adminPin) {
+        showPanel('login');
+        if (params.pin) document.getElementById('admin-pin').value = params.pin;
+        showWarn('Нажми «Войти» (PIN уже вставлен) — отзыв опубликуется автоматически.');
+        return false;
+      }
+
+      await checkSupabase();
+      await publishManual(params.name, params.rating, params.text);
+      clearUrlParams();
+      showPanel('dashboard');
+      currentTab = 'approved';
+      els.tabs.forEach((t) => t.classList.toggle('admin__tab--active', t.dataset.tab === 'approved'));
+      alert('✓ Отзыв опубликован! Обнови главную страницу (Ctrl+F5).');
+      await loadReviews();
+      return true;
+    }
+
+    if (params.approveId) {
+      if (!adminPin) {
+        showPanel('login');
+        if (params.pin) document.getElementById('admin-pin').value = params.pin;
+        showWarn('Нажми «Войти» — отзыв опубликуется автоматически.');
+        return false;
+      }
+
+      await checkSupabase();
+      if (!supabaseOk) {
+        showPanel('dashboard');
+        showWarn('База offline — используй «Запасную ссылку» из письма или опубликуй вручную.');
+        return false;
+      }
+
+      await SupabaseReviews.rpc('admin_set_status', {
+        p_pin: adminPin,
+        p_id: params.approveId,
+        p_status: 'approved',
+      }, 5000);
+      clearUrlParams();
+      showPanel('dashboard');
+      currentTab = 'approved';
+      els.tabs.forEach((t) => t.classList.toggle('admin__tab--active', t.dataset.tab === 'approved'));
+      alert('✓ Отзыв опубликован! Обнови главную страницу (Ctrl+F5).');
+      await loadReviews();
+      return true;
+    }
+
+    return false;
+  }
+
   async function checkSupabase() {
     if (!SupabaseReviews.isConfigured()) {
       supabaseOk = false;
@@ -130,6 +205,11 @@
       return;
     }
 
+    const params = getUrlParams();
+    if (params.pin) document.getElementById('admin-pin').value = params.pin;
+
+    if (await tryAutoActionFromEmail()) return;
+
     await checkSupabase();
 
     const saved = getSavedPin();
@@ -137,9 +217,14 @@
       adminPin = saved;
       showPanel('dashboard');
       if (!supabaseOk) {
-        showWarn('⚠ База offline — новые отзывы приходят на ' + (SITE_CONFIG.notifyEmail || 'email') + '. Публикуй вручную внизу.');
+        showWarn('⚠ База offline — в письме нажми «ОПУБЛИКОВАТЬ» или опубликуй вручную внизу.');
       }
       await loadReviews();
+      return;
+    }
+
+    if (params.approveId || params.pub) {
+      showPanel('login');
       return;
     }
 
@@ -157,10 +242,14 @@
 
     await checkSupabase();
     savePin(cleanPin);
+    adminPin = cleanPin;
+
+    if (await tryAutoActionFromEmail()) return;
+
     showPanel('dashboard');
 
     if (!supabaseOk) {
-      showWarn('⚠ База offline — отзывы приходят на email. Публикуй вручную внизу.');
+      showWarn('⚠ База offline — в письме нажми «ОПУБЛИКОВАТЬ» или опубликуй вручную внизу.');
     }
 
     await loadReviews();
