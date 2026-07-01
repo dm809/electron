@@ -158,10 +158,20 @@
 
   function openWhatsapp(message) {
     const url = buildWhatsappUrl(message);
-    const win = window.open(url, '_blank', 'noopener,noreferrer');
-    if (!win) {
+    const mobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+
+    if (mobile) {
       window.location.href = url;
+      return;
     }
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
   }
 
   function initReviewForm() {
@@ -214,14 +224,22 @@
     });
   }
 
+  let reviewsBooted = false;
+
+  function bootReviews() {
+    if (reviewsBooted) return;
+    reviewsBooted = true;
+    initStarRating();
+    initReviewForm();
+    renderReviews();
+    updateReviewPlaceholders();
+  }
+
   window.ReviewsModule = {
     render: renderReviews,
     updatePlaceholders: updateReviewPlaceholders,
-    init: () => {
-      initStarRating();
-      initReviewForm();
-      renderReviews();
-      updateReviewPlaceholders();
-    },
+    init: bootReviews,
   };
+
+  bootReviews();
 })();
