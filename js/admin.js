@@ -122,8 +122,11 @@
   }
 
   async function detectMode() {
-    if (!SupabaseReviews.isConfigured()) return false;
-    const result = await SupabaseReviews.testConnection(5000);
+    if (!SupabaseReviews.isConfigured() || !SupabaseReviews.shouldUse()) {
+      useLocalMode = true;
+      return false;
+    }
+    const result = await SupabaseReviews.testConnection(4000);
     useLocalMode = !result.ok;
     if (result.reason === 'network') {
       showWarn('⚠ Supabase сейчас недоступен. Работает локальный режим (только этот браузер). ' + networkErrorMessage());
@@ -137,8 +140,7 @@
     if (useLocalMode) {
       return pin === localPin();
     }
-    const { data, error } = await db().rpc('admin_check_pin', { p_pin: pin });
-    if (error) throw error;
+    const data = await SupabaseReviews.rpc('admin_check_pin', { p_pin: pin }, 4000);
     return Boolean(data);
   }
 
@@ -246,11 +248,10 @@
       }));
     }
 
-    const { data, error } = await db().rpc('admin_get_reviews', {
+    const data = await SupabaseReviews.rpc('admin_get_reviews', {
       p_pin: adminPin,
       p_status: status,
-    });
-    if (error) throw error;
+    }, 4000);
     return data || [];
   }
 
@@ -334,12 +335,11 @@
       saveLocalList(LOCAL_APPROVED_KEY, approved);
       return;
     }
-    const { error } = await db().rpc('admin_set_status', {
+    await SupabaseReviews.rpc('admin_set_status', {
       p_pin: adminPin,
       p_id: id,
       p_status: 'approved',
-    });
-    if (error) throw error;
+    }, 4000);
   }
 
   async function rejectReview(id) {
@@ -349,12 +349,11 @@
       saveLocalList(LOCAL_STORAGE_KEY, pending);
       return;
     }
-    const { error } = await db().rpc('admin_set_status', {
+    await SupabaseReviews.rpc('admin_set_status', {
       p_pin: adminPin,
       p_id: id,
       p_status: 'rejected',
-    });
-    if (error) throw error;
+    }, 4000);
   }
 
   async function deleteReview(id) {
@@ -365,11 +364,10 @@
       saveLocalList(LOCAL_APPROVED_KEY, approved);
       return;
     }
-    const { error } = await db().rpc('admin_delete_review', {
+    await SupabaseReviews.rpc('admin_delete_review', {
       p_pin: adminPin,
       p_id: id,
-    });
-    if (error) throw error;
+    }, 4000);
   }
 
   els.loginForm.addEventListener('submit', (e) => {

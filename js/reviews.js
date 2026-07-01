@@ -53,88 +53,31 @@
   function saveLocalPending(review) {
     const list = loadLocal(STORAGE_KEY);
     list.unshift(review);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(list.slice(0, 20)));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(list.slice(0, 50)));
   }
 
-  function dbEnabled() {
-    return window.SupabaseReviews && SupabaseReviews.isConfigured();
-  }
-
-  let supabaseOnline = null;
-
-  async function checkSupabase() {
-    if (!dbEnabled()) return false;
-    if (supabaseOnline !== null) return supabaseOnline;
-
-    const result = await SupabaseReviews.testConnection(5000);
-    supabaseOnline = result.ok;
-    return supabaseOnline;
-  }
-
-  async function fetchApprovedReviews() {
-    if (dbEnabled()) {
-      try {
-        const online = await checkSupabase();
-        if (online) {
-          const db = SupabaseReviews.getClient();
-          const { data, error } = await SupabaseReviews.withTimeout(
-            db
-              .from('reviews')
-              .select('id, name, rating, text, created_at')
-              .eq('status', 'approved')
-              .order('created_at', { ascending: false }),
-            5000
-          );
-
-          if (!error) {
-            return (data || []).map((r) => ({
-              name: r.name,
-              rating: r.rating,
-              text: r.text,
-              date: r.created_at,
-            }));
-          }
-        }
-      } catch (err) {
-        console.warn('Supabase unavailable, using local reviews:', err);
-        supabaseOnline = false;
-      }
-    }
-
-    const localApproved = loadLocal(APPROVED_KEY);
+  function buildLocalList(includePending) {
+    const pending = includePending ? loadLocal(STORAGE_KEY) : [];
+    const approved = loadLocal(APPROVED_KEY);
     const configApproved = SITE_CONFIG.reviews || [];
-    return [...localApproved, ...configApproved];
+
+    return [
+      ...pending.map((r) => ({ ...r, _pending: true })),
+      ...approved.map((r) => ({ ...r, _pending: false })),
+      ...configApproved.map((r) => ({ ...r, _pending: false })),
+    ];
   }
 
-  async function submitReview(review) {
-    if (dbEnabled()) {
-      try {
-        const online = await checkSupabase();
-        if (online) {
-          const db = SupabaseReviews.getClient();
-          const { error } = await SupabaseReviews.withTimeout(
-            db.from('reviews').insert({
-              name: review.name,
-              rating: review.rating,
-              text: review.text,
-              status: 'pending',
-            }),
-            5000
-          );
-          if (error) throw error;
-          return { ok: true, remote: true };
-        }
-      } catch (err) {
-        const msg = (err?.message || '').toLowerCase();
-        if (!msg.includes('failed to fetch') && !msg.includes('network') && !msg.includes('timeout')) {
-          throw err;
-        }
-        supabaseOnline = false;
-      }
+  function paintReviews(all) {
+    const list = document.getElementById('reviews-list');
+    if (!list) return;
+
+    if (!all.length) {
+      list.innerHTML = `<p class="reviews__empty">${getT('reviewsEmpty')}</p>`;
+      return;
     }
 
-    saveLocalPending(review);
-    return { ok: true, local: true };
+    list.innerHTML = all.map((r) => renderReviewCard(r, r._pending)).join('');
   }
 
   function renderReviewCard(review, pending) {
@@ -154,32 +97,39 @@
       </article>`;
   }
 
-  async function renderReviews() {
-    const list = document.getElementById('reviews-list');
-    if (!list) return;
+  function renderReviews() {
+    paintReviews(buildLocalList(true));
 
-    list.innerHTML = `<p class="reviews__empty">${getT('reviewsLoading')}</p>`;
+    if (!window.SupabaseReviews || !SupabaseReviews.shouldUse()) return;
 
-    try {
-      const published = await fetchApprovedReviews();
-      const showLocalPending = !dbEnabled() || supabaseOnline === false;
-      const pending = showLocalPending ? loadLocal(STORAGE_KEY) : [];
+    SupabaseReviews.fetchApproved(4000)
+      .then((remote) => {
+        if (!remote.length) return;
+        const localPending = loadLocal(STORAGE_KEY);
+        paintReviews([
+          ...localPending.map((r) => ({ ...r, _pending: true })),
+          ...remote.map((r) => ({ ...r, _pending: false })),
+        ]);
+      })
+      .catch(() => {
+        SupabaseReviews.markSkip();
+      });
+  }
 
-      const all = [
-        ...pending.map((r) => ({ ...r, _pending: true })),
-        ...published.map((r) => ({ ...r, _pending: false })),
-      ];
+  async function submitReview(review) {
+    saveLocalPending(review);
 
-      if (!all.length) {
-        list.innerHTML = `<p class="reviews__empty">${getT('reviewsEmpty')}</p>`;
-        return;
+    if (window.SupabaseReviews && SupabaseReviews.shouldUse()) {
+      try {
+        await SupabaseReviews.insertReview(review, 4000);
+        return { ok: true, remote: true };
+      } catch (err) {
+        console.warn('Supabase insert failed, saved locally:', err);
+        SupabaseReviews.markSkip();
       }
-
-      list.innerHTML = all.map((r) => renderReviewCard(r, r._pending)).join('');
-    } catch (err) {
-      console.error(err);
-      list.innerHTML = `<p class="reviews__empty">${getT('reviewsEmpty')}</p>`;
     }
+
+    return { ok: true, local: true };
   }
 
   function resetStarRating() {
@@ -265,19 +215,12 @@
       };
 
       try {
-        const result = await submitReview(review);
+        await submitReview(review);
         form.reset();
         resetStarRating();
-        await renderReviews();
+        renderReviews();
 
         if (success) {
-          if (result.local && errorEl) {
-            errorEl.textContent = getT('reviewsOfflineSaved');
-            errorEl.hidden = false;
-            errorEl.style.color = '#fbbf24';
-            errorEl.style.borderColor = 'rgba(251, 191, 36, 0.25)';
-            errorEl.style.background = 'rgba(251, 191, 36, 0.1)';
-          }
           success.hidden = false;
           setTimeout(() => { success.hidden = true; }, 8000);
         }
