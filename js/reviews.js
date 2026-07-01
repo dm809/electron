@@ -1,7 +1,6 @@
 (function () {
   'use strict';
 
-  const STORAGE_KEY = 'elektron-pending-reviews';
   const APPROVED_KEY = 'elektron-approved-reviews';
 
   function getT(key) {
@@ -42,30 +41,18 @@
       .replace(/"/g, '&quot;');
   }
 
-  function loadLocal(key) {
+  function loadLocalApproved() {
     try {
-      return JSON.parse(localStorage.getItem(key) || '[]');
+      return JSON.parse(localStorage.getItem(APPROVED_KEY) || '[]');
     } catch {
       return [];
     }
   }
 
-  function saveLocalPending(review) {
-    const list = loadLocal(STORAGE_KEY);
-    list.unshift(review);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(list.slice(0, 50)));
-  }
-
-  function buildLocalList(includePending) {
-    const pending = includePending ? loadLocal(STORAGE_KEY) : [];
-    const approved = loadLocal(APPROVED_KEY);
-    const configApproved = SITE_CONFIG.reviews || [];
-
-    return [
-      ...pending.map((r) => ({ ...r, _pending: true })),
-      ...approved.map((r) => ({ ...r, _pending: false })),
-      ...configApproved.map((r) => ({ ...r, _pending: false })),
-    ];
+  function buildApprovedList() {
+    const local = loadLocalApproved();
+    const config = SITE_CONFIG.reviews || [];
+    return [...local, ...config].map((r) => ({ ...r, _pending: false }));
   }
 
   function paintReviews(all) {
@@ -77,19 +64,14 @@
       return;
     }
 
-    list.innerHTML = all.map((r) => renderReviewCard(r, r._pending)).join('');
+    list.innerHTML = all.map((r) => renderReviewCard(r)).join('');
   }
 
-  function renderReviewCard(review, pending) {
-    const pendingBadge = pending
-      ? `<span class="review-card__badge">${getT('reviewsPending')}</span>`
-      : '';
-
+  function renderReviewCard(review) {
     return `
-      <article class="review-card${pending ? ' review-card--pending' : ''}">
+      <article class="review-card">
         <div class="review-card__head">
           <div class="review-card__author">${escapeHtml(review.name)}</div>
-          ${pendingBadge}
         </div>
         <div class="review-card__rating-wrap" aria-label="${review.rating}/5">${starsHtml(review.rating)}</div>
         <p class="review-card__text">${escapeHtml(review.text)}</p>
@@ -98,38 +80,56 @@
   }
 
   function renderReviews() {
-    paintReviews(buildLocalList(true));
+    paintReviews(buildApprovedList());
 
-    if (!window.SupabaseReviews || !SupabaseReviews.shouldUse()) return;
+    if (!window.SupabaseReviews || !SupabaseReviews.isConfigured()) return;
 
-    SupabaseReviews.fetchApproved(4000)
+    SupabaseReviews.fetchApproved(5000)
       .then((remote) => {
         if (!remote.length) return;
-        const localPending = loadLocal(STORAGE_KEY);
-        paintReviews([
-          ...localPending.map((r) => ({ ...r, _pending: true })),
-          ...remote.map((r) => ({ ...r, _pending: false })),
-        ]);
+        paintReviews(remote.map((r) => ({ ...r, _pending: false })));
       })
-      .catch(() => {
-        SupabaseReviews.markSkip();
+      .catch(() => {});
+  }
+
+  async function notifyOwnerByEmail(review) {
+    const email = SITE_CONFIG.notifyEmail;
+    if (!email) return;
+
+    const stars = '★'.repeat(review.rating) + '☆'.repeat(5 - review.rating);
+
+    try {
+      await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(email)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({
+          _subject: 'Новый отзыв ELEKTRON — на проверку',
+          _template: 'table',
+          name: review.name,
+          rating: `${stars} (${review.rating}/5)`,
+          message: review.text,
+          _captcha: 'false',
+        }),
       });
+    } catch (err) {
+      console.warn('Email notify failed:', err);
+    }
   }
 
   async function submitReview(review) {
-    saveLocalPending(review);
+    let sentRemote = false;
 
-    if (window.SupabaseReviews && SupabaseReviews.shouldUse()) {
+    if (window.SupabaseReviews && SupabaseReviews.isConfigured()) {
       try {
-        await SupabaseReviews.insertReview(review, 4000);
-        return { ok: true, remote: true };
+        await SupabaseReviews.insertReview(review, 6000);
+        sentRemote = true;
       } catch (err) {
-        console.warn('Supabase insert failed, saved locally:', err);
-        SupabaseReviews.markSkip();
+        console.warn('Supabase insert failed:', err);
       }
     }
 
-    return { ok: true, local: true };
+    await notifyOwnerByEmail(review);
+    return { ok: true, remote: sentRemote };
   }
 
   function resetStarRating() {
@@ -218,7 +218,6 @@
         await submitReview(review);
         form.reset();
         resetStarRating();
-        renderReviews();
 
         if (success) {
           success.hidden = false;
@@ -255,7 +254,7 @@
 
   window.ReviewsModule = {
     render: renderReviews,
-    updatePlaceholders: updateReviewPlaceholders,
+    updateReviewPlaceholders: updateReviewPlaceholders,
     init: bootReviews,
   };
 

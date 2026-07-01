@@ -73,14 +73,34 @@
 
         <div class="admin__list" id="admin-list"></div>
         <p class="admin__empty" id="admin-empty" hidden>Нет отзывов в этой вкладке</p>
+
+        <div class="admin__manual" id="admin-manual">
+          <h3>Опубликовать отзыв вручную</h3>
+          <p class="admin__hint">Если отзыв пришёл на email — вставь сюда и нажми «Опубликовать»</p>
+          <form class="admin__form" id="manual-form">
+            <label class="reviews__field">
+              <span>Имя клиента</span>
+              <input type="text" id="manual-name" required maxlength="60">
+            </label>
+            <label class="reviews__field">
+              <span>Оценка (1–5)</span>
+              <input type="number" id="manual-rating" min="1" max="5" value="5" required>
+            </label>
+            <label class="reviews__field">
+              <span>Текст отзыва</span>
+              <textarea id="manual-text" required maxlength="500" rows="3"></textarea>
+            </label>
+            <button type="submit" class="btn btn--primary admin__btn">Опубликовать на сайте</button>
+          </form>
+        </div>
       </section>
 
     </div>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/config.js?v=3"></script>
-  <script src="js/supabase-client.js?v=3"></script>
-  <script src="js/admin.js?v=3"></script>
+  <script src="js/config.js?v=4"></script>
+  <script src="js/supabase-client.js?v=4"></script>
+  <script src="js/admin.js?v=4"></script>
 </body>
 </html>

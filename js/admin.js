@@ -2,18 +2,18 @@
   'use strict';
 
   const PIN_KEY = 'elektron-admin-pin';
-  const LOCAL_STORAGE_KEY = 'elektron-pending-reviews';
   const LOCAL_APPROVED_KEY = 'elektron-approved-reviews';
 
   let currentTab = 'pending';
   let adminPin = '';
-  let useLocalMode = false;
+  let supabaseOk = false;
 
   const els = {
     setup: document.getElementById('admin-setup'),
     login: document.getElementById('admin-login'),
     dashboard: document.getElementById('admin-dashboard'),
     loginForm: document.getElementById('login-form'),
+    manualForm: document.getElementById('manual-form'),
     loginError: document.getElementById('login-error'),
     loginWarn: document.getElementById('login-warn'),
     list: document.getElementById('admin-list'),
@@ -22,14 +22,15 @@
     refreshBtn: document.getElementById('refresh-btn'),
     logoutBtn: document.getElementById('logout-btn'),
     tabs: document.querySelectorAll('.admin__tab'),
+    manual: document.getElementById('admin-manual'),
   };
-
-  function db() {
-    return SupabaseReviews.getClient();
-  }
 
   function localPin() {
     return String(SITE_CONFIG.adminLocalPin || '472891');
+  }
+
+  function verifyPin(pin) {
+    return String(pin).trim() === localPin();
   }
 
   function getSavedPin() {
@@ -46,16 +47,16 @@
     adminPin = '';
   }
 
-  function loadLocalList(key) {
+  function loadLocalApproved() {
     try {
-      return JSON.parse(localStorage.getItem(key) || '[]');
+      return JSON.parse(localStorage.getItem(LOCAL_APPROVED_KEY) || '[]');
     } catch {
       return [];
     }
   }
 
-  function saveLocalList(key, list) {
-    localStorage.setItem(key, JSON.stringify(list));
+  function saveLocalApproved(list) {
+    localStorage.setItem(LOCAL_APPROVED_KEY, JSON.stringify(list));
   }
 
   function starsHtml(rating) {
@@ -100,48 +101,27 @@
     els.loginWarn.hidden = !msg;
   }
 
-  function networkErrorMessage() {
-    return 'Не удаётся связаться с Supabase (Failed to fetch). Зайди на supabase.com → открой проект → нажми Restore project / Восстановить. Подожди 2 минуты и обнови страницу.';
-  }
-
   function translateError(error) {
     const msg = (error?.message || String(error)).toLowerCase();
-    if (msg.includes('failed to fetch') || msg.includes('networkerror')) {
-      return networkErrorMessage();
-    }
-    if (msg.includes('invalid pin')) {
-      return 'Неверный PIN-код. По умолчанию: 472891';
-    }
+    if (msg.includes('invalid pin')) return 'Неверный PIN-код';
     if (msg.includes('function') && msg.includes('does not exist')) {
-      return 'Запусти SQL из файла supabase-admin-pin.sql в Supabase → SQL Editor';
+      return 'Запусти supabase-admin-pin.sql в Supabase → SQL Editor (обновлённая версия)';
     }
-    if (msg.includes('reviews') && msg.includes('does not exist')) {
-      return 'Запусти SQL из файла supabase-setup.sql в Supabase → SQL Editor';
+    if (msg.includes('failed to fetch') || msg.includes('network') || msg.includes('abort')) {
+      return 'Supabase недоступен. Отзывы приходят на email — публикуй вручную ниже.';
     }
-    return error?.message || 'Ошибка подключения';
+    return error?.message || 'Ошибка';
   }
 
-  async function detectMode() {
-    if (!SupabaseReviews.isConfigured() || !SupabaseReviews.shouldUse()) {
-      useLocalMode = true;
+  async function checkSupabase() {
+    if (!SupabaseReviews.isConfigured()) {
+      supabaseOk = false;
       return false;
     }
-    const result = await SupabaseReviews.testConnection(4000);
-    useLocalMode = !result.ok;
-    if (result.reason === 'network') {
-      showWarn('⚠ Supabase сейчас недоступен. Работает локальный режим (только этот браузер). ' + networkErrorMessage());
-    } else if (useLocalMode && result.reason === 'no_table') {
-      showWarn('⚠ Запусти supabase-setup.sql и supabase-admin-pin.sql в Supabase SQL Editor.');
-    }
-    return !useLocalMode;
-  }
-
-  async function verifyPin(pin) {
-    if (useLocalMode) {
-      return pin === localPin();
-    }
-    const data = await SupabaseReviews.rpc('admin_check_pin', { p_pin: pin }, 4000);
-    return Boolean(data);
+    sessionStorage.removeItem('elektron-supabase-skip');
+    const result = await SupabaseReviews.testConnection(5000);
+    supabaseOk = result.ok;
+    return supabaseOk;
   }
 
   async function init() {
@@ -150,32 +130,17 @@
       return;
     }
 
-    await detectMode();
+    await checkSupabase();
 
     const saved = getSavedPin();
-    if (saved) {
-      try {
-        const ok = await verifyPin(saved);
-        if (ok) {
-          adminPin = saved;
-          showPanel('dashboard');
-          await loadReviews();
-          return;
-        }
-        clearPin();
-      } catch (err) {
-        if ((err?.message || '').toLowerCase().includes('failed to fetch')) {
-          useLocalMode = true;
-          if (saved === localPin()) {
-            adminPin = saved;
-            showPanel('dashboard');
-            showWarn('⚠ Локальный режим — восстанови проект в Supabase для работы с телефонов клиентов.');
-            await loadReviews();
-            return;
-          }
-        }
-        clearPin();
+    if (saved && verifyPin(saved)) {
+      adminPin = saved;
+      showPanel('dashboard');
+      if (!supabaseOk) {
+        showWarn('⚠ База offline — новые отзывы приходят на ' + (SITE_CONFIG.notifyEmail || 'email') + '. Публикуй вручную внизу.');
       }
+      await loadReviews();
+      return;
     }
 
     showPanel('login');
@@ -185,35 +150,20 @@
     showError('');
     const cleanPin = String(pin).trim();
 
-    if (!cleanPin) {
-      showError('Введите PIN-код');
+    if (!verifyPin(cleanPin)) {
+      showError('Неверный PIN. По умолчанию: 472891');
       return;
     }
 
-    await detectMode();
+    await checkSupabase();
+    savePin(cleanPin);
+    showPanel('dashboard');
 
-    try {
-      const ok = await verifyPin(cleanPin);
-      if (!ok) {
-        showError('Неверный PIN-код. По умолчанию: 472891');
-        return;
-      }
-      savePin(cleanPin);
-      showPanel('dashboard');
-      await loadReviews();
-    } catch (err) {
-      console.error(err);
-      const msg = translateError(err);
-      if ((err?.message || '').toLowerCase().includes('failed to fetch') && cleanPin === localPin()) {
-        useLocalMode = true;
-        savePin(cleanPin);
-        showPanel('dashboard');
-        showWarn('⚠ Локальный режим активен. Восстанови проект в Supabase.');
-        await loadReviews();
-        return;
-      }
-      showError(msg);
+    if (!supabaseOk) {
+      showWarn('⚠ База offline — отзывы приходят на email. Публикуй вручную внизу.');
     }
+
+    await loadReviews();
   }
 
   function logout() {
@@ -225,19 +175,21 @@
   }
 
   async function fetchReviews(status) {
-    if (useLocalMode) {
-      if (status === 'pending') {
-        return loadLocalList(LOCAL_STORAGE_KEY).map((r, i) => ({
-          id: `local-p-${i}`,
-          name: r.name,
-          rating: r.rating,
-          text: r.text,
-          created_at: r.date,
-          status: 'pending',
-          _localIndex: i,
-        }));
+    if (supabaseOk) {
+      try {
+        const data = await SupabaseReviews.rpc('admin_get_reviews', {
+          p_pin: adminPin,
+          p_status: status,
+        }, 5000);
+        return data || [];
+      } catch (err) {
+        console.warn('Supabase RPC failed:', err);
+        supabaseOk = false;
       }
-      return loadLocalList(LOCAL_APPROVED_KEY).map((r, i) => ({
+    }
+
+    if (status === 'approved') {
+      return loadLocalApproved().map((r, i) => ({
         id: `local-a-${i}`,
         name: r.name,
         rating: r.rating,
@@ -248,11 +200,7 @@
       }));
     }
 
-    const data = await SupabaseReviews.rpc('admin_get_reviews', {
-      p_pin: adminPin,
-      p_status: status,
-    }, 4000);
-    return data || [];
+    return [];
   }
 
   function pluralReviews(n) {
@@ -293,81 +241,97 @@
     els.list.innerHTML = '<p class="admin__loading">Загрузка...</p>';
     els.empty.hidden = true;
 
+    if (els.manual) {
+      els.manual.hidden = currentTab !== 'pending';
+    }
+
     try {
       const status = currentTab === 'pending' ? 'pending' : 'approved';
       const reviews = await fetchReviews(status);
 
-      if (currentTab === 'pending') {
-        els.count.textContent = `${reviews.length} ${pluralReviews(reviews.length)}`;
-      } else {
-        const pending = await fetchReviews('pending');
-        els.count.textContent = `${pending.length} ${pluralReviews(pending.length)}`;
-      }
+      const pending = await fetchReviews('pending');
+      els.count.textContent = `${pending.length} ${pluralReviews(pending.length)}`;
 
       if (!reviews.length) {
         els.list.innerHTML = '';
         els.empty.hidden = false;
+        if (currentTab === 'pending' && !supabaseOk) {
+          els.empty.textContent = 'Ожидающих нет в базе. Проверь email или опубликуй вручную ↓';
+        } else {
+          els.empty.textContent = 'Нет отзывов в этой вкладке';
+        }
         return;
       }
 
       els.list.innerHTML = reviews.map(renderCard).join('');
     } catch (err) {
       console.error(err);
-      if ((err?.message || '').toLowerCase().includes('invalid pin')) {
-        logout();
-        showError('Сессия истекла — введите PIN снова');
-        return;
-      }
       els.list.innerHTML = `<p class="admin__error">${escapeHtml(translateError(err))}</p>`;
     }
   }
 
   async function approveReview(id) {
-    if (useLocalMode) {
-      const pending = loadLocalList(LOCAL_STORAGE_KEY);
-      const idx = Number(String(id).replace('local-p-', ''));
-      const review = pending[idx];
-      if (!review) return;
-      const approved = loadLocalList(LOCAL_APPROVED_KEY);
-      approved.unshift(review);
-      pending.splice(idx, 1);
-      saveLocalList(LOCAL_STORAGE_KEY, pending);
-      saveLocalList(LOCAL_APPROVED_KEY, approved);
-      return;
+    if (!supabaseOk || String(id).startsWith('local-')) {
+      throw new Error('Используй форму «Опубликовать вручную» или восстанови Supabase');
     }
     await SupabaseReviews.rpc('admin_set_status', {
       p_pin: adminPin,
       p_id: id,
       p_status: 'approved',
-    }, 4000);
+    }, 5000);
   }
 
   async function rejectReview(id) {
-    if (useLocalMode) {
-      const pending = loadLocalList(LOCAL_STORAGE_KEY);
-      pending.splice(Number(String(id).replace('local-p-', '')), 1);
-      saveLocalList(LOCAL_STORAGE_KEY, pending);
-      return;
-    }
+    if (!supabaseOk) throw new Error('Supabase offline');
     await SupabaseReviews.rpc('admin_set_status', {
       p_pin: adminPin,
       p_id: id,
       p_status: 'rejected',
-    }, 4000);
+    }, 5000);
   }
 
   async function deleteReview(id) {
     if (!confirm('Удалить этот отзыв навсегда?')) return;
-    if (useLocalMode) {
-      const approved = loadLocalList(LOCAL_APPROVED_KEY);
+
+    if (String(id).startsWith('local-a-')) {
+      const approved = loadLocalApproved();
       approved.splice(Number(String(id).replace('local-a-', '')), 1);
-      saveLocalList(LOCAL_APPROVED_KEY, approved);
+      saveLocalApproved(approved);
       return;
     }
+
+    if (!supabaseOk) throw new Error('Supabase offline');
     await SupabaseReviews.rpc('admin_delete_review', {
       p_pin: adminPin,
       p_id: id,
-    }, 4000);
+    }, 5000);
+  }
+
+  async function publishManual(name, rating, text) {
+    const review = {
+      name,
+      rating,
+      text,
+      date: new Date().toISOString(),
+    };
+
+    if (supabaseOk) {
+      try {
+        await SupabaseReviews.rpc('admin_publish_review', {
+          p_pin: adminPin,
+          p_name: name,
+          p_rating: rating,
+          p_text: text,
+        }, 5000);
+        return;
+      } catch (err) {
+        console.warn('RPC publish failed, saving locally:', err);
+      }
+    }
+
+    const list = loadLocalApproved();
+    list.unshift(review);
+    saveLocalApproved(list.slice(0, 100));
   }
 
   els.loginForm.addEventListener('submit', (e) => {
@@ -375,9 +339,36 @@
     login(document.getElementById('admin-pin').value);
   });
 
+  if (els.manualForm) {
+    els.manualForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('manual-name').value.trim();
+      const rating = Number(document.getElementById('manual-rating').value);
+      const text = document.getElementById('manual-text').value.trim();
+      const btn = els.manualForm.querySelector('button[type="submit"]');
+
+      if (!name || !text) return;
+
+      btn.disabled = true;
+      try {
+        await publishManual(name, rating, text);
+        els.manualForm.reset();
+        document.getElementById('manual-rating').value = '5';
+        alert('Отзыв опубликован! Обнови главную страницу сайта.');
+        currentTab = 'approved';
+        els.tabs.forEach((t) => t.classList.toggle('admin__tab--active', t.dataset.tab === 'approved'));
+        await loadReviews();
+      } catch (err) {
+        alert(translateError(err));
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  }
+
   els.logoutBtn.addEventListener('click', logout);
   els.refreshBtn.addEventListener('click', async () => {
-    await detectMode();
+    await checkSupabase();
     loadReviews();
   });
 

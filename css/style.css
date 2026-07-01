@@ -1786,6 +1786,17 @@ a.partner-card:hover .partner-card__logo img {
   border: 1px solid rgba(239, 68, 68, 0.25);
 }
 
+.admin__manual {
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px dashed var(--border);
+}
+
+.admin__manual h3 {
+  font-size: 1rem;
+  margin-bottom: 8px;
+}
+
 @media (max-width: 640px) {
   .admin__toolbar {
     flex-direction: column;

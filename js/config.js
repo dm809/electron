@@ -89,6 +89,9 @@ const SITE_CONFIG = {
     publishableKey: 'sb_publishable_BMKU7FvUuZ7pjVDhnSXGeg_uFZ72wF1',
   },
 
-  // PIN для локального режима, если Supabase временно недоступен
+  // PIN для входа в admin.html
   adminLocalPin: '472891',
+
+  // Email для уведомлений о новых отзывах (FormSubmit — без WhatsApp)
+  notifyEmail: 'gordienkodmytro9@gmail.com',
 };

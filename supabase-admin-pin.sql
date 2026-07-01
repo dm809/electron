@@ -76,5 +76,27 @@ grant execute on function public.admin_get_reviews(text, text) to anon, authenti
 grant execute on function public.admin_set_status(text, uuid, text) to anon, authenticated;
 grant execute on function public.admin_delete_review(text, uuid) to anon, authenticated;
 
+create or replace function public.admin_publish_review(
+  p_pin text,
+  p_name text,
+  p_rating int,
+  p_text text
+)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if not admin_check_pin(p_pin) then
+    raise exception 'invalid pin';
+  end if;
+  insert into public.reviews (name, rating, text, status)
+  values (p_name, p_rating, p_text, 'approved');
+end;
+$$;
+
+grant execute on function public.admin_publish_review(text, text, int, text) to anon, authenticated;
+
 -- PIN по умолчанию: 472891
 -- Сменить: Table Editor → admin_secrets → pin
