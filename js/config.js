@@ -77,9 +77,13 @@ const SITE_CONFIG = {
     ],
   },
 
-  // Опубликованные отзывы — добавляй сюда после проверки в WhatsApp
-  // rating: от 1 до 5, date: '2026-06-30'
-  reviews: [
-    // { name: 'Алексей', rating: 5, text: 'Отличный ремонт платы Daikin!', date: '2026-06-15' },
-  ],
+  // Опубликованные отзывы (резерв, если Supabase не настроен)
+  reviews: [],
+
+  // ── Модерация отзывов (без WhatsApp) ──
+  // Инструкция: supabase-setup.sql
+  supabase: {
+    url: '',
+    anonKey: '',
+  },
 };

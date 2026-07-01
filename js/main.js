@@ -308,7 +308,28 @@
     }
   }
 
+  function initAdminSecret() {
+    const link = document.getElementById('admin-link');
+    const trigger = document.getElementById('logo-img') || document.querySelector('.logo');
+    if (!link || !trigger) return;
+
+    let clicks = 0;
+    let timer;
+
+    trigger.addEventListener('click', (e) => {
+      if (e.defaultPrevented) return;
+      clicks += 1;
+      clearTimeout(timer);
+      timer = setTimeout(() => { clicks = 0; }, 2500);
+      if (clicks >= 5) {
+        clicks = 0;
+        link.hidden = false;
+      }
+    });
+  }
+
   initBrand();
+  initAdminSecret();
   initLangSwitch();
   initMobileMenu();
   initReveal();

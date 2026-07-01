@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Модерация отзывов — ELEKTRON</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32.png">
+</head>
+<body class="admin-page">
+
+  <div class="bg-grid"></div>
+  <div class="bg-glow bg-glow--1"></div>
+
+  <main class="admin">
+    <div class="container admin__container">
+
+      <header class="admin__header">
+        <a href="index.html" class="admin__back">← На сайт</a>
+        <h1>Модерация отзывов</h1>
+        <p class="admin__subtitle">Только для владельца · клиенты не видят эту страницу</p>
+      </header>
+
+      <!-- Настройка не завершена -->
+      <section class="admin__panel" id="admin-setup" hidden>
+        <h2>Нужна одноразовая настройка</h2>
+        <ol class="admin__steps">
+          <li>Зайди на <a href="https://supabase.com" target="_blank" rel="noopener">supabase.com</a> → создай бесплатный проект</li>
+          <li>SQL Editor → вставь код из файла <code>supabase-setup.sql</code> → Run</li>
+          <li>Settings → API → скопируй <strong>URL</strong> и <strong>anon public key</strong> в <code>js/config.js</code></li>
+          <li>Authentication → Users → Add user (твой email и пароль для входа сюда)</li>
+          <li>Обнови сайт на GitHub</li>
+        </ol>
+      </section>
+
+      <!-- Вход -->
+      <section class="admin__panel" id="admin-login">
+        <h2>Вход</h2>
+        <form class="admin__form" id="login-form">
+          <label class="reviews__field">
+            <span>Email</span>
+            <input type="email" id="admin-email" required autocomplete="username">
+          </label>
+          <label class="reviews__field">
+            <span>Пароль</span>
+            <input type="password" id="admin-password" required autocomplete="current-password">
+          </label>
+          <button type="submit" class="btn btn--primary admin__btn">Войти</button>
+          <p class="admin__error" id="login-error" hidden></p>
+        </form>
+      </section>
+
+      <!-- Панель модерации -->
+      <section class="admin__panel" id="admin-dashboard" hidden>
+        <div class="admin__toolbar">
+          <div>
+            <h2>На проверке</h2>
+            <p class="admin__count" id="pending-count">0 отзывов</p>
+          </div>
+          <div class="admin__toolbar-actions">
+            <button type="button" class="btn btn--sm" id="refresh-btn">Обновить</button>
+            <button type="button" class="btn btn--sm" id="logout-btn">Выйти</button>
+          </div>
+        </div>
+
+        <div class="admin__tabs">
+          <button type="button" class="admin__tab admin__tab--active" data-tab="pending">Ожидают</button>
+          <button type="button" class="admin__tab" data-tab="approved">Опубликованные</button>
+        </div>
+
+        <div class="admin__list" id="admin-list"></div>
+        <p class="admin__empty" id="admin-empty" hidden>Нет отзывов в этой вкладке</p>
+      </section>
+
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

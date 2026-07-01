@@ -19,11 +19,6 @@
     return `<span class="star-display" aria-label="${n}/5">${stars}</span>`;
   }
 
-  function starString(rating) {
-    const n = Math.min(5, Math.max(1, Number(rating) || 5));
-    return '★'.repeat(n) + '☆'.repeat(5 - n);
-  }
-
   function formatDate(dateStr) {
     if (!dateStr) return '';
     try {
@@ -38,7 +33,15 @@
     }
   }
 
-  function loadPendingReviews() {
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function loadLocalPending() {
     try {
       return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
     } catch {
@@ -46,16 +49,57 @@
     }
   }
 
-  function savePendingReview(review) {
-    const list = loadPendingReviews();
+  function saveLocalPending(review) {
+    const list = loadLocalPending();
     list.unshift(review);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(list.slice(0, 20)));
   }
 
-  /** Для отзывов всегда wa.me/номер?text= — короткая ссылка wa.me/message/ не принимает текст */
-  function buildWhatsappUrl(message) {
-    const phone = String(SITE_CONFIG.whatsappPhone || '').replace(/\D/g, '');
-    return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+  function dbEnabled() {
+    return window.SupabaseReviews && SupabaseReviews.isConfigured();
+  }
+
+  async function fetchApprovedReviews() {
+    if (dbEnabled()) {
+      const db = SupabaseReviews.getClient();
+      const { data, error } = await db
+        .from('reviews')
+        .select('id, name, rating, text, created_at')
+        .eq('status', 'approved')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Reviews fetch error:', error);
+        return SITE_CONFIG.reviews || [];
+      }
+
+      return (data || []).map((r) => ({
+        name: r.name,
+        rating: r.rating,
+        text: r.text,
+        date: r.created_at,
+      }));
+    }
+
+    return SITE_CONFIG.reviews || [];
+  }
+
+  async function submitReview(review) {
+    if (dbEnabled()) {
+      const db = SupabaseReviews.getClient();
+      const { error } = await db.from('reviews').insert({
+        name: review.name,
+        rating: review.rating,
+        text: review.text,
+        status: 'pending',
+      });
+
+      if (error) throw error;
+      return { ok: true };
+    }
+
+    saveLocalPending(review);
+    return { ok: true, local: true };
   }
 
   function renderReviewCard(review, pending) {
@@ -75,20 +119,16 @@
       </article>`;
   }
 
-  function escapeHtml(str) {
-    return String(str)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
-  }
-
-  function renderReviews() {
+  async function renderReviews() {
     const list = document.getElementById('reviews-list');
     if (!list) return;
 
-    const published = SITE_CONFIG.reviews || [];
-    const pending = loadPendingReviews();
+    list.innerHTML = `<p class="reviews__empty">${getT('reviewsLoading')}</p>`;
+
+    const published = await fetchApprovedReviews();
+    const showLocalPending = !dbEnabled();
+    const pending = showLocalPending ? loadLocalPending() : [];
+
     const all = [
       ...pending.map((r) => ({ ...r, _pending: true })),
       ...published.map((r) => ({ ...r, _pending: false })),
@@ -112,8 +152,7 @@
     const container = document.getElementById('review-star-input');
     if (!container) return;
 
-    const stars = container.querySelectorAll('.star-input__star');
-    stars.forEach((star) => {
+    container.querySelectorAll('.star-input__star').forEach((star) => {
       const val = Number(star.dataset.value);
       star.classList.toggle('star-input__star--active', val <= value);
       star.setAttribute('aria-pressed', val === value ? 'true' : 'false');
@@ -156,64 +195,53 @@
     paint();
   }
 
-  function openWhatsapp(message) {
-    const url = buildWhatsappUrl(message);
-    const mobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
-
-    if (mobile) {
-      window.location.href = url;
-      return;
-    }
-
-    const link = document.createElement('a');
-    link.href = url;
-    link.target = '_blank';
-    link.rel = 'noopener noreferrer';
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-  }
-
   function initReviewForm() {
     const form = document.getElementById('review-form');
     const success = document.getElementById('review-success');
+    const errorEl = document.getElementById('review-error');
     if (!form) return;
 
-    form.addEventListener('submit', (e) => {
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
       const name = form.querySelector('#review-name').value.trim();
       const rating = form.querySelector('#review-rating').value;
       const text = form.querySelector('#review-text').value.trim();
+      const submitBtn = form.querySelector('.reviews__submit');
 
       if (!name || !text) {
         form.reportValidity();
         return;
       }
 
-      const date = new Date().toISOString().slice(0, 10);
-      const review = { name, rating: Number(rating), text, date };
+      if (errorEl) errorEl.hidden = true;
+      if (submitBtn) submitBtn.disabled = true;
 
-      const waMessage = [
-        getT('reviewsWaPrefix'),
-        '',
-        `${starString(rating)} (${rating}/5)`,
-        `${name}:`,
+      const review = {
+        name,
+        rating: Number(rating),
         text,
-        '',
-        getT('reviewsWaFooter'),
-      ].join('\n');
+        date: new Date().toISOString(),
+      };
 
-      savePendingReview(review);
-      renderReviews();
-      openWhatsapp(waMessage);
+      try {
+        await submitReview(review);
+        form.reset();
+        resetStarRating();
+        await renderReviews();
 
-      form.reset();
-      resetStarRating();
-
-      if (success) {
-        success.hidden = false;
-        setTimeout(() => { success.hidden = true; }, 8000);
+        if (success) {
+          success.hidden = false;
+          setTimeout(() => { success.hidden = true; }, 8000);
+        }
+      } catch (err) {
+        console.error('Review submit error:', err);
+        if (errorEl) {
+          errorEl.textContent = getT('reviewsError');
+          errorEl.hidden = false;
+        }
+      } finally {
+        if (submitBtn) submitBtn.disabled = false;
       }
     });
   }
