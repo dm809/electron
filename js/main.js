@@ -84,7 +84,7 @@
     updateSchema();
     if (window.ReviewsModule) {
       window.ReviewsModule.render();
-      window.ReviewsModule.updatePlaceholders();
+      window.ReviewsModule.updateReviewPlaceholders();
     }
   }
 

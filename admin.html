@@ -92,6 +92,8 @@
             </label>
             <button type="submit" class="btn btn--primary admin__btn">Опубликовать на сайте</button>
           </form>
+          <p class="admin__hint admin__hint--small">Без Supabase: нажми «Подключить GitHub» — отзывы сразу появятся у всех на сайте.</p>
+          <button type="button" class="btn btn--sm" id="github-sync-btn">Подключить GitHub</button>
         </div>
       </section>
 
@@ -99,8 +101,9 @@
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/config.js?v=7"></script>
-  <script src="js/supabase-client.js?v=7"></script>
-  <script src="js/admin.js?v=7"></script>
+  <script src="js/config.js?v=8"></script>
+  <script src="js/site-reviews-store.js?v=8"></script>
+  <script src="js/supabase-client.js?v=8"></script>
+  <script src="js/admin.js?v=8"></script>
 </body>
 </html>

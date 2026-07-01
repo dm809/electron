@@ -74,6 +74,11 @@
     return mergeApproved([], local, config);
   }
 
+  function fetchSiteJsonReviews() {
+    if (!window.SiteReviewsStore) return Promise.resolve([]);
+    return SiteReviewsStore.fetchFromSite(8000);
+  }
+
   function paintReviews(all) {
     const list = document.getElementById('reviews-list');
     if (!list) return;
@@ -98,17 +103,22 @@
       </article>`;
   }
 
-  function renderReviews() {
+  async function renderReviews() {
     paintReviews(buildApprovedList());
+
+    const local = loadLocalApproved();
+    const config = SITE_CONFIG.reviews || [];
+    const siteJson = await fetchSiteJsonReviews();
+    paintReviews(mergeApproved(siteJson, local, config));
 
     if (!window.SupabaseReviews || !SupabaseReviews.isConfigured()) return;
 
-    SupabaseReviews.fetchApproved(8000)
-      .then((remote) => {
-        const merged = mergeApproved(remote, loadLocalApproved(), SITE_CONFIG.reviews || []);
-        paintReviews(merged);
-      })
-      .catch(() => {});
+    try {
+      const remote = await SupabaseReviews.fetchApproved(8000);
+      paintReviews(mergeApproved(remote, siteJson, local, config));
+    } catch {
+      /* Supabase offline — site JSON + local still shown */
+    }
   }
 
   function adminBaseUrl() {

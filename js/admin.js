@@ -284,7 +284,7 @@
     }
 
     if (status === 'approved') {
-      return loadLocalApproved().map((r, i) => ({
+      const local = loadLocalApproved().map((r, i) => ({
         id: `local-a-${i}`,
         name: r.name,
         rating: r.rating,
@@ -293,6 +293,25 @@
         status: 'approved',
         _localIndex: i,
       }));
+
+      if (window.SiteReviewsStore) {
+        const site = await SiteReviewsStore.fetchFromSite(5000);
+        const fromSite = site.map((r, i) => ({
+          id: `site-${i}`,
+          name: r.name,
+          rating: r.rating,
+          text: r.text,
+          created_at: r.date,
+          status: 'approved',
+        }));
+        return SiteReviewsStore.mergeReviews(fromSite, local).map((r, i) => ({
+          id: r.id || `merged-${i}`,
+          ...r,
+          status: 'approved',
+        }));
+      }
+
+      return local;
     }
 
     return [];
@@ -374,6 +393,13 @@
       p_id: id,
       p_status: 'approved',
     }, 5000);
+
+    const pending = await SupabaseReviews.rpc('admin_get_reviews', {
+      p_pin: adminPin,
+      p_status: 'approved',
+    }, 5000);
+    const row = (pending || []).find((r) => r.id === id);
+    if (row) await syncReviewToSiteFile(row);
   }
 
   async function rejectReview(id) {
@@ -410,15 +436,21 @@
       date: new Date().toISOString(),
     };
 
+    let scope = 'local';
+
     if (SupabaseReviews.isConfigured()) {
       try {
         await SupabaseReviews.publishApproved(name, rating, text, adminPin, 8000);
-        return { scope: 'global' };
+        scope = 'global';
       } catch (err) {
         console.warn('Supabase publish failed:', err);
-        throw new Error('База не отвечает. Запусти supabase-setup.sql и supabase-admin-pin.sql в Supabase SQL Editor.');
       }
     }
+
+    const siteResult = await syncReviewToSiteFile(review);
+    if (siteResult.scope === 'site') return { scope: 'site' };
+    if (scope === 'global') return { scope: 'global' };
+    if (siteResult.scope === 'download') return { scope: 'download' };
 
     const list = loadLocalApproved();
     list.unshift(review);
@@ -429,11 +461,33 @@
   function showPublishedAlert(scope) {
     const siteUrl = `${location.origin}${(SITE_CONFIG.basePath || '/electron/').replace(/\/?$/, '/')}index.html`;
     if (scope === 'global') {
-      alert(`✓ Отзыв опубликован для ВСЕХ!\n\nОткрой сайт и нажми Ctrl+F5:\n${siteUrl}`);
+      alert(`✓ Отзыв опубликован для ВСЕХ (база Supabase)!\n\nОткрой сайт и нажми Ctrl+F5:\n${siteUrl}`);
       window.open(siteUrl, '_blank');
       return;
     }
-    alert(`Отзыв сохранён только на этом устройстве.\nНастрой Supabase — тогда все увидят отзывы.`);
+    if (scope === 'site') {
+      alert(`✓ Отзыв на сайте для ВСЕХ!\n\nGitHub обновлён — подожди 1–2 мин и Ctrl+F5:\n${siteUrl}`);
+      window.open(siteUrl, '_blank');
+      return;
+    }
+    if (scope === 'download') {
+      alert(`Отзыв добавлен в файл reviews.json (скачан).\n\nЗагрузи его на GitHub в папку data/reviews.json\nили нажми «Подключить GitHub» внизу админки.`);
+      return;
+    }
+    alert(`Отзыв сохранён только на этом устройстве.\nПодключи GitHub или Supabase — тогда все увидят отзывы.`);
+  }
+
+  async function syncReviewToSiteFile(review) {
+    if (!window.SiteReviewsStore) return { scope: 'local' };
+
+    const current = await SiteReviewsStore.fetchFromSite(8000);
+    const merged = SiteReviewsStore.mergeReviews(current, [review]);
+    const pushed = await SiteReviewsStore.pushToGitHub(merged);
+
+    if (pushed.ok) return { scope: 'site', merged };
+
+    SiteReviewsStore.downloadJson(merged);
+    return { scope: 'download', merged };
   }
 
   els.loginForm.addEventListener('submit', (e) => {
@@ -502,5 +556,27 @@
     }
   });
 
+  function initGitHubSync() {
+    const btn = document.getElementById('github-sync-btn');
+    if (!btn || !window.SiteReviewsStore) return;
+
+    if (SiteReviewsStore.getGitHubToken()) {
+      btn.textContent = 'GitHub подключён ✓';
+    }
+
+    btn.addEventListener('click', () => {
+      const current = SiteReviewsStore.getGitHubToken();
+      const token = prompt(
+        'Вставь GitHub token (classic, scope: repo).\nОн хранится только в этой вкладке.\n\nОставь пустым — отключить.',
+        current || ''
+      );
+      if (token === null) return;
+      SiteReviewsStore.setGitHubToken(token.trim());
+      btn.textContent = token.trim() ? 'GitHub подключён ✓' : 'Подключить GitHub';
+      if (token.trim()) alert('GitHub подключён. Теперь «Опубликовать» сразу обновит сайт для всех.');
+    });
+  }
+
+  initGitHubSync();
   init();
 })();
