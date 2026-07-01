@@ -12,7 +12,16 @@
 
   function starsHtml(rating) {
     const n = Math.min(5, Math.max(1, Number(rating) || 5));
-    return `<span class="review-card__rating">${n}/5</span>`;
+    const stars = Array.from({ length: 5 }, (_, i) => {
+      const filled = i < n;
+      return `<span class="star-display__star${filled ? ' star-display__star--filled' : ''}" aria-hidden="true">★</span>`;
+    }).join('');
+    return `<span class="star-display" aria-label="${n}/5">${stars}</span>`;
+  }
+
+  function starString(rating) {
+    const n = Math.min(5, Math.max(1, Number(rating) || 5));
+    return '★'.repeat(n) + '☆'.repeat(5 - n);
   }
 
   function formatDate(dateStr) {
@@ -43,11 +52,9 @@
     localStorage.setItem(STORAGE_KEY, JSON.stringify(list.slice(0, 20)));
   }
 
+  /** Для отзывов всегда wa.me/номер?text= — короткая ссылка wa.me/message/ не принимает текст */
   function buildWhatsappUrl(message) {
-    if (SITE_CONFIG.whatsappUrl && SITE_CONFIG.whatsappUrl.includes('wa.me/message/')) {
-      return `${SITE_CONFIG.whatsappUrl}?text=${encodeURIComponent(message)}`;
-    }
-    const phone = SITE_CONFIG.whatsappPhone;
+    const phone = String(SITE_CONFIG.whatsappPhone || '').replace(/\D/g, '');
     return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
   }
 
@@ -95,6 +102,68 @@
     list.innerHTML = all.map((r) => renderReviewCard(r, r._pending)).join('');
   }
 
+  function resetStarRating() {
+    const hidden = document.getElementById('review-rating');
+    if (hidden) hidden.value = '5';
+    setStarRating(5);
+  }
+
+  function setStarRating(value) {
+    const container = document.getElementById('review-star-input');
+    if (!container) return;
+
+    const stars = container.querySelectorAll('.star-input__star');
+    stars.forEach((star) => {
+      const val = Number(star.dataset.value);
+      star.classList.toggle('star-input__star--active', val <= value);
+      star.setAttribute('aria-pressed', val === value ? 'true' : 'false');
+    });
+  }
+
+  function initStarRating() {
+    const container = document.getElementById('review-star-input');
+    const hidden = document.getElementById('review-rating');
+    if (!container || !hidden) return;
+
+    let current = Number(hidden.value) || 5;
+    const stars = container.querySelectorAll('.star-input__star');
+
+    function paint(preview) {
+      const val = preview ?? current;
+      stars.forEach((star) => {
+        star.classList.toggle('star-input__star--active', Number(star.dataset.value) <= val);
+      });
+    }
+
+    stars.forEach((star) => {
+      const val = Number(star.dataset.value);
+
+      star.addEventListener('click', () => {
+        current = val;
+        hidden.value = String(val);
+        paint();
+      });
+
+      star.addEventListener('mouseenter', () => paint(val));
+      star.addEventListener('focus', () => paint(val));
+    });
+
+    container.addEventListener('mouseleave', () => paint());
+    container.addEventListener('focusout', (e) => {
+      if (!container.contains(e.relatedTarget)) paint();
+    });
+
+    paint();
+  }
+
+  function openWhatsapp(message) {
+    const url = buildWhatsappUrl(message);
+    const win = window.open(url, '_blank', 'noopener,noreferrer');
+    if (!win) {
+      window.location.href = url;
+    }
+  }
+
   function initReviewForm() {
     const form = document.getElementById('review-form');
     const success = document.getElementById('review-success');
@@ -118,23 +187,23 @@
       const waMessage = [
         getT('reviewsWaPrefix'),
         '',
-        `⭐ ${rating}/5`,
+        `${starString(rating)} (${rating}/5)`,
         `${name}:`,
         text,
+        '',
+        getT('reviewsWaFooter'),
       ].join('\n');
 
       savePendingReview(review);
       renderReviews();
-
-      window.open(buildWhatsappUrl(waMessage), '_blank', 'noopener');
+      openWhatsapp(waMessage);
 
       form.reset();
-      const ratingEl = document.getElementById('review-rating');
-      if (ratingEl) ratingEl.value = '5';
+      resetStarRating();
 
       if (success) {
         success.hidden = false;
-        setTimeout(() => { success.hidden = true; }, 6000);
+        setTimeout(() => { success.hidden = true; }, 8000);
       }
     });
   }
@@ -149,6 +218,7 @@
     render: renderReviews,
     updatePlaceholders: updateReviewPlaceholders,
     init: () => {
+      initStarRating();
       initReviewForm();
       renderReviews();
       updateReviewPlaceholders();
