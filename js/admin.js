@@ -2,8 +2,12 @@
   'use strict';
 
   const PIN_KEY = 'elektron-admin-pin';
+  const LOCAL_STORAGE_KEY = 'elektron-pending-reviews';
+  const LOCAL_APPROVED_KEY = 'elektron-approved-reviews';
+
   let currentTab = 'pending';
   let adminPin = '';
+  let useLocalMode = false;
 
   const els = {
     setup: document.getElementById('admin-setup'),
@@ -11,6 +15,7 @@
     dashboard: document.getElementById('admin-dashboard'),
     loginForm: document.getElementById('login-form'),
     loginError: document.getElementById('login-error'),
+    loginWarn: document.getElementById('login-warn'),
     list: document.getElementById('admin-list'),
     empty: document.getElementById('admin-empty'),
     count: document.getElementById('pending-count'),
@@ -21,6 +26,10 @@
 
   function db() {
     return SupabaseReviews.getClient();
+  }
+
+  function localPin() {
+    return String(SITE_CONFIG.adminLocalPin || '472891');
   }
 
   function getSavedPin() {
@@ -35,6 +44,18 @@
   function clearPin() {
     sessionStorage.removeItem(PIN_KEY);
     adminPin = '';
+  }
+
+  function loadLocalList(key) {
+    try {
+      return JSON.parse(localStorage.getItem(key) || '[]');
+    } catch {
+      return [];
+    }
+  }
+
+  function saveLocalList(key, list) {
+    localStorage.setItem(key, JSON.stringify(list));
   }
 
   function starsHtml(rating) {
@@ -73,10 +94,23 @@
     els.loginError.hidden = !msg;
   }
 
+  function showWarn(msg) {
+    if (!els.loginWarn) return;
+    els.loginWarn.textContent = msg;
+    els.loginWarn.hidden = !msg;
+  }
+
+  function networkErrorMessage() {
+    return 'Не удаётся связаться с Supabase (Failed to fetch). Зайди на supabase.com → открой проект → нажми Restore project / Восстановить. Подожди 2 минуты и обнови страницу.';
+  }
+
   function translateError(error) {
-    const msg = (error?.message || '').toLowerCase();
+    const msg = (error?.message || String(error)).toLowerCase();
+    if (msg.includes('failed to fetch') || msg.includes('networkerror')) {
+      return networkErrorMessage();
+    }
     if (msg.includes('invalid pin')) {
-      return 'Неверный PIN-код. По умолчанию: 472891 (если запускал supabase-admin-pin.sql)';
+      return 'Неверный PIN-код. По умолчанию: 472891';
     }
     if (msg.includes('function') && msg.includes('does not exist')) {
       return 'Запусти SQL из файла supabase-admin-pin.sql в Supabase → SQL Editor';
@@ -87,7 +121,22 @@
     return error?.message || 'Ошибка подключения';
   }
 
+  async function detectMode() {
+    if (!SupabaseReviews.isConfigured()) return false;
+    const result = await SupabaseReviews.testConnection();
+    useLocalMode = !result.ok;
+    if (result.reason === 'network') {
+      showWarn('⚠ Supabase сейчас недоступен. Работает локальный режим (только этот браузер). ' + networkErrorMessage());
+    } else if (useLocalMode && result.reason === 'no_table') {
+      showWarn('⚠ Запусти supabase-setup.sql и supabase-admin-pin.sql в Supabase SQL Editor.');
+    }
+    return !useLocalMode;
+  }
+
   async function verifyPin(pin) {
+    if (useLocalMode) {
+      return pin === localPin();
+    }
     const { data, error } = await db().rpc('admin_check_pin', { p_pin: pin });
     if (error) throw error;
     return Boolean(data);
@@ -98,6 +147,8 @@
       showPanel('setup');
       return;
     }
+
+    await detectMode();
 
     const saved = getSavedPin();
     if (saved) {
@@ -110,7 +161,17 @@
           return;
         }
         clearPin();
-      } catch {
+      } catch (err) {
+        if ((err?.message || '').toLowerCase().includes('failed to fetch')) {
+          useLocalMode = true;
+          if (saved === localPin()) {
+            adminPin = saved;
+            showPanel('dashboard');
+            showWarn('⚠ Локальный режим — восстанови проект в Supabase для работы с телефонов клиентов.');
+            await loadReviews();
+            return;
+          }
+        }
         clearPin();
       }
     }
@@ -127,6 +188,8 @@
       return;
     }
 
+    await detectMode();
+
     try {
       const ok = await verifyPin(cleanPin);
       if (!ok) {
@@ -138,7 +201,16 @@
       await loadReviews();
     } catch (err) {
       console.error(err);
-      showError(translateError(err));
+      const msg = translateError(err);
+      if ((err?.message || '').toLowerCase().includes('failed to fetch') && cleanPin === localPin()) {
+        useLocalMode = true;
+        savePin(cleanPin);
+        showPanel('dashboard');
+        showWarn('⚠ Локальный режим активен. Восстанови проект в Supabase.');
+        await loadReviews();
+        return;
+      }
+      showError(msg);
     }
   }
 
@@ -146,10 +218,34 @@
     clearPin();
     showPanel('login');
     showError('');
+    showWarn('');
     document.getElementById('admin-pin').value = '';
   }
 
   async function fetchReviews(status) {
+    if (useLocalMode) {
+      if (status === 'pending') {
+        return loadLocalList(LOCAL_STORAGE_KEY).map((r, i) => ({
+          id: `local-p-${i}`,
+          name: r.name,
+          rating: r.rating,
+          text: r.text,
+          created_at: r.date,
+          status: 'pending',
+          _localIndex: i,
+        }));
+      }
+      return loadLocalList(LOCAL_APPROVED_KEY).map((r, i) => ({
+        id: `local-a-${i}`,
+        name: r.name,
+        rating: r.rating,
+        text: r.text,
+        created_at: r.date,
+        status: 'approved',
+        _localIndex: i,
+      }));
+    }
+
     const { data, error } = await db().rpc('admin_get_reviews', {
       p_pin: adminPin,
       p_status: status,
@@ -226,6 +322,18 @@
   }
 
   async function approveReview(id) {
+    if (useLocalMode) {
+      const pending = loadLocalList(LOCAL_STORAGE_KEY);
+      const idx = Number(String(id).replace('local-p-', ''));
+      const review = pending[idx];
+      if (!review) return;
+      const approved = loadLocalList(LOCAL_APPROVED_KEY);
+      approved.unshift(review);
+      pending.splice(idx, 1);
+      saveLocalList(LOCAL_STORAGE_KEY, pending);
+      saveLocalList(LOCAL_APPROVED_KEY, approved);
+      return;
+    }
     const { error } = await db().rpc('admin_set_status', {
       p_pin: adminPin,
       p_id: id,
@@ -235,6 +343,12 @@
   }
 
   async function rejectReview(id) {
+    if (useLocalMode) {
+      const pending = loadLocalList(LOCAL_STORAGE_KEY);
+      pending.splice(Number(String(id).replace('local-p-', '')), 1);
+      saveLocalList(LOCAL_STORAGE_KEY, pending);
+      return;
+    }
     const { error } = await db().rpc('admin_set_status', {
       p_pin: adminPin,
       p_id: id,
@@ -245,6 +359,12 @@
 
   async function deleteReview(id) {
     if (!confirm('Удалить этот отзыв навсегда?')) return;
+    if (useLocalMode) {
+      const approved = loadLocalList(LOCAL_APPROVED_KEY);
+      approved.splice(Number(String(id).replace('local-a-', '')), 1);
+      saveLocalList(LOCAL_APPROVED_KEY, approved);
+      return;
+    }
     const { error } = await db().rpc('admin_delete_review', {
       p_pin: adminPin,
       p_id: id,
@@ -258,7 +378,10 @@
   });
 
   els.logoutBtn.addEventListener('click', logout);
-  els.refreshBtn.addEventListener('click', loadReviews);
+  els.refreshBtn.addEventListener('click', async () => {
+    await detectMode();
+    loadReviews();
+  });
 
   els.tabs.forEach((tab) => {
     tab.addEventListener('click', () => {

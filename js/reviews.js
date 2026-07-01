@@ -55,47 +55,61 @@
     localStorage.setItem(STORAGE_KEY, JSON.stringify(list.slice(0, 20)));
   }
 
-  function dbEnabled() {
-    return window.SupabaseReviews && SupabaseReviews.isConfigured();
+  let supabaseOnline = null;
+
+  async function checkSupabase() {
+    if (!dbEnabled()) return false;
+    if (supabaseOnline !== null) return supabaseOnline;
+    const result = await SupabaseReviews.testConnection();
+    supabaseOnline = result.ok;
+    return supabaseOnline;
   }
 
   async function fetchApprovedReviews() {
-    if (dbEnabled()) {
-      const db = SupabaseReviews.getClient();
-      const { data, error } = await db
-        .from('reviews')
-        .select('id, name, rating, text, created_at')
-        .eq('status', 'approved')
-        .order('created_at', { ascending: false });
+    if (dbEnabled() && await checkSupabase()) {
+      try {
+        const db = SupabaseReviews.getClient();
+        const { data, error } = await db
+          .from('reviews')
+          .select('id, name, rating, text, created_at')
+          .eq('status', 'approved')
+          .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Reviews fetch error:', error);
-        return SITE_CONFIG.reviews || [];
+        if (!error) {
+          return (data || []).map((r) => ({
+            name: r.name,
+            rating: r.rating,
+            text: r.text,
+            date: r.created_at,
+          }));
+        }
+      } catch (err) {
+        console.error('Reviews fetch error:', err);
+        supabaseOnline = false;
       }
-
-      return (data || []).map((r) => ({
-        name: r.name,
-        rating: r.rating,
-        text: r.text,
-        date: r.created_at,
-      }));
     }
 
-    return SITE_CONFIG.reviews || [];
+    const localApproved = (SITE_CONFIG.reviews || []).filter((r) => !r._pending);
+    return localApproved;
   }
 
   async function submitReview(review) {
-    if (dbEnabled()) {
-      const db = SupabaseReviews.getClient();
-      const { error } = await db.from('reviews').insert({
-        name: review.name,
-        rating: review.rating,
-        text: review.text,
-        status: 'pending',
-      });
-
-      if (error) throw error;
-      return { ok: true };
+    if (dbEnabled() && await checkSupabase()) {
+      try {
+        const db = SupabaseReviews.getClient();
+        const { error } = await db.from('reviews').insert({
+          name: review.name,
+          rating: review.rating,
+          text: review.text,
+          status: 'pending',
+        });
+        if (error) throw error;
+        return { ok: true };
+      } catch (err) {
+        const msg = (err?.message || '').toLowerCase();
+        if (!msg.includes('failed to fetch') && !msg.includes('network')) throw err;
+        supabaseOnline = false;
+      }
     }
 
     saveLocalPending(review);
