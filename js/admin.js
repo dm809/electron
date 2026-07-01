@@ -123,7 +123,7 @@
 
   async function detectMode() {
     if (!SupabaseReviews.isConfigured()) return false;
-    const result = await SupabaseReviews.testConnection();
+    const result = await SupabaseReviews.testConnection(5000);
     useLocalMode = !result.ok;
     if (result.reason === 'network') {
       showWarn('⚠ Supabase сейчас недоступен. Работает локальный режим (только этот браузер). ' + networkErrorMessage());

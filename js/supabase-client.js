@@ -2,6 +2,7 @@
   'use strict';
 
   let client = null;
+  const DEFAULT_TIMEOUT = 6000;
 
   function isConfigured() {
     const cfg = SITE_CONFIG.supabase || {};
@@ -11,6 +12,15 @@
   function getApiKey() {
     const cfg = SITE_CONFIG.supabase || {};
     return cfg.publishableKey || cfg.anonKey || '';
+  }
+
+  function withTimeout(promise, ms = DEFAULT_TIMEOUT) {
+    return Promise.race([
+      promise,
+      new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('timeout')), ms);
+      }),
+    ]);
   }
 
   function getClient() {
@@ -24,14 +34,14 @@
     return client;
   }
 
-  async function testConnection() {
+  async function testConnection(timeoutMs = DEFAULT_TIMEOUT) {
     if (!isConfigured()) return { ok: false, reason: 'not_configured' };
 
     try {
-      const { error } = await getClient()
-        .from('reviews')
-        .select('id')
-        .limit(1);
+      const { error } = await withTimeout(
+        getClient().from('reviews').select('id').limit(1),
+        timeoutMs
+      );
 
       if (error) {
         if (error.code === '42P01') return { ok: false, reason: 'no_table' };
@@ -40,6 +50,7 @@
       return { ok: true };
     } catch (err) {
       const msg = (err?.message || String(err)).toLowerCase();
+      if (msg.includes('timeout')) return { ok: false, reason: 'timeout' };
       if (msg.includes('failed to fetch') || msg.includes('network')) {
         return { ok: false, reason: 'network' };
       }
@@ -51,6 +62,7 @@
     isConfigured,
     getApiKey,
     getClient,
+    withTimeout,
     testConnection,
   };
 })();

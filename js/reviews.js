@@ -2,6 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'elektron-pending-reviews';
+  const APPROVED_KEY = 'elektron-approved-reviews';
 
   function getT(key) {
     if (typeof window.__siteT === 'function') return window.__siteT(key);
@@ -41,18 +42,22 @@
       .replace(/"/g, '&quot;');
   }
 
-  function loadLocalPending() {
+  function loadLocal(key) {
     try {
-      return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+      return JSON.parse(localStorage.getItem(key) || '[]');
     } catch {
       return [];
     }
   }
 
   function saveLocalPending(review) {
-    const list = loadLocalPending();
+    const list = loadLocal(STORAGE_KEY);
     list.unshift(review);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(list.slice(0, 20)));
+  }
+
+  function dbEnabled() {
+    return window.SupabaseReviews && SupabaseReviews.isConfigured();
   }
 
   let supabaseOnline = null;
@@ -60,54 +65,70 @@
   async function checkSupabase() {
     if (!dbEnabled()) return false;
     if (supabaseOnline !== null) return supabaseOnline;
-    const result = await SupabaseReviews.testConnection();
+
+    const result = await SupabaseReviews.testConnection(5000);
     supabaseOnline = result.ok;
     return supabaseOnline;
   }
 
   async function fetchApprovedReviews() {
-    if (dbEnabled() && await checkSupabase()) {
+    if (dbEnabled()) {
       try {
-        const db = SupabaseReviews.getClient();
-        const { data, error } = await db
-          .from('reviews')
-          .select('id, name, rating, text, created_at')
-          .eq('status', 'approved')
-          .order('created_at', { ascending: false });
+        const online = await checkSupabase();
+        if (online) {
+          const db = SupabaseReviews.getClient();
+          const { data, error } = await SupabaseReviews.withTimeout(
+            db
+              .from('reviews')
+              .select('id, name, rating, text, created_at')
+              .eq('status', 'approved')
+              .order('created_at', { ascending: false }),
+            5000
+          );
 
-        if (!error) {
-          return (data || []).map((r) => ({
-            name: r.name,
-            rating: r.rating,
-            text: r.text,
-            date: r.created_at,
-          }));
+          if (!error) {
+            return (data || []).map((r) => ({
+              name: r.name,
+              rating: r.rating,
+              text: r.text,
+              date: r.created_at,
+            }));
+          }
         }
       } catch (err) {
-        console.error('Reviews fetch error:', err);
+        console.warn('Supabase unavailable, using local reviews:', err);
         supabaseOnline = false;
       }
     }
 
-    const localApproved = (SITE_CONFIG.reviews || []).filter((r) => !r._pending);
-    return localApproved;
+    const localApproved = loadLocal(APPROVED_KEY);
+    const configApproved = SITE_CONFIG.reviews || [];
+    return [...localApproved, ...configApproved];
   }
 
   async function submitReview(review) {
-    if (dbEnabled() && await checkSupabase()) {
+    if (dbEnabled()) {
       try {
-        const db = SupabaseReviews.getClient();
-        const { error } = await db.from('reviews').insert({
-          name: review.name,
-          rating: review.rating,
-          text: review.text,
-          status: 'pending',
-        });
-        if (error) throw error;
-        return { ok: true };
+        const online = await checkSupabase();
+        if (online) {
+          const db = SupabaseReviews.getClient();
+          const { error } = await SupabaseReviews.withTimeout(
+            db.from('reviews').insert({
+              name: review.name,
+              rating: review.rating,
+              text: review.text,
+              status: 'pending',
+            }),
+            5000
+          );
+          if (error) throw error;
+          return { ok: true, remote: true };
+        }
       } catch (err) {
         const msg = (err?.message || '').toLowerCase();
-        if (!msg.includes('failed to fetch') && !msg.includes('network')) throw err;
+        if (!msg.includes('failed to fetch') && !msg.includes('network') && !msg.includes('timeout')) {
+          throw err;
+        }
         supabaseOnline = false;
       }
     }
@@ -139,21 +160,26 @@
 
     list.innerHTML = `<p class="reviews__empty">${getT('reviewsLoading')}</p>`;
 
-    const published = await fetchApprovedReviews();
-    const showLocalPending = !dbEnabled();
-    const pending = showLocalPending ? loadLocalPending() : [];
+    try {
+      const published = await fetchApprovedReviews();
+      const showLocalPending = !dbEnabled() || supabaseOnline === false;
+      const pending = showLocalPending ? loadLocal(STORAGE_KEY) : [];
 
-    const all = [
-      ...pending.map((r) => ({ ...r, _pending: true })),
-      ...published.map((r) => ({ ...r, _pending: false })),
-    ];
+      const all = [
+        ...pending.map((r) => ({ ...r, _pending: true })),
+        ...published.map((r) => ({ ...r, _pending: false })),
+      ];
 
-    if (!all.length) {
+      if (!all.length) {
+        list.innerHTML = `<p class="reviews__empty">${getT('reviewsEmpty')}</p>`;
+        return;
+      }
+
+      list.innerHTML = all.map((r) => renderReviewCard(r, r._pending)).join('');
+    } catch (err) {
+      console.error(err);
       list.innerHTML = `<p class="reviews__empty">${getT('reviewsEmpty')}</p>`;
-      return;
     }
-
-    list.innerHTML = all.map((r) => renderReviewCard(r, r._pending)).join('');
   }
 
   function resetStarRating() {
@@ -239,12 +265,19 @@
       };
 
       try {
-        await submitReview(review);
+        const result = await submitReview(review);
         form.reset();
         resetStarRating();
         await renderReviews();
 
         if (success) {
+          if (result.local && errorEl) {
+            errorEl.textContent = getT('reviewsOfflineSaved');
+            errorEl.hidden = false;
+            errorEl.style.color = '#fbbf24';
+            errorEl.style.borderColor = 'rgba(251, 191, 36, 0.25)';
+            errorEl.style.background = 'rgba(251, 191, 36, 0.1)';
+          }
           success.hidden = false;
           setTimeout(() => { success.hidden = true; }, 8000);
         }
