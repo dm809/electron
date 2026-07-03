@@ -38,8 +38,8 @@
   window.__siteT = t;
 
   function siteBase() {
+    if (typeof window.getSiteBasePath === 'function') return getSiteBasePath();
     if (location.protocol === 'file:') return '';
-    if (SITE_CONFIG.basePath) return SITE_CONFIG.basePath;
     const m = location.pathname.match(/^\/([^/]+)\//);
     return m ? `/${m[1]}/` : '/';
   }

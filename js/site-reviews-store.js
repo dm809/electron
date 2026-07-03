@@ -7,7 +7,10 @@
   const TOKEN_KEY = 'elektron-gh-token';
 
   function basePath() {
-    return (SITE_CONFIG.basePath || '/electron/').replace(/\/?$/, '/');
+    const raw = typeof window.getSiteBasePath === 'function'
+      ? getSiteBasePath()
+      : (SITE_CONFIG.basePath || '/electron/');
+    return String(raw).replace(/\/?$/, '/');
   }
 
   function reviewKey(r) {

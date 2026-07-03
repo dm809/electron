@@ -82,8 +82,6 @@ const SITE_CONFIG = {
       { src: 'images/gallery-10.jpg', altKey: 'gal10' },
       { src: 'images/gallery-11.jpg', altKey: 'gal11' },
       { src: 'images/gallery-12.jpg', altKey: 'gal12' },
-      { src: 'images/gallery-13.jpg', altKey: 'gal13' },
-      { src: 'images/gallery-14.jpg', altKey: 'gal14' },
     ],
   },
 
@@ -104,3 +102,24 @@ const SITE_CONFIG = {
   // Email для уведомлений о новых отзывах (FormSubmit — без WhatsApp)
   notifyEmail: 'gordienkodmytro9@gmail.com',
 };
+
+/** Базовый путь: / на своём домене, /electron/ на github.io */
+function getSiteBasePath() {
+  const ghPath = SITE_CONFIG.githubPagesPath || '/electron/';
+  if (typeof location === 'undefined') return ghPath;
+  if (location.protocol === 'file:') return ghPath;
+
+  const custom = (SITE_CONFIG.customDomain || '').toLowerCase();
+  const host = location.hostname.toLowerCase();
+  if (custom && (host === custom || host === `www.${custom}`)) return '/';
+
+  if (host.includes('github.io')) {
+    const m = location.pathname.match(/^\/([^/]+)\//);
+    if (m) return `/${m[1]}/`;
+    return ghPath;
+  }
+
+  return '/';
+}
+
+window.getSiteBasePath = getSiteBasePath;

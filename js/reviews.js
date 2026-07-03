@@ -122,10 +122,13 @@
   }
 
   function adminBaseUrl() {
-    const path = (SITE_CONFIG.basePath || '/electron/').replace(/\/?$/, '/');
-    if (location.protocol === 'file:') return `https://dm809.github.io${path}`;
-    if (location.origin.includes('github.io')) return `${location.origin}${path}`;
-    return `https://dm809.github.io${path}`;
+    const path = typeof window.getSiteBasePath === 'function'
+      ? getSiteBasePath()
+      : (SITE_CONFIG.basePath || '/electron/');
+    const base = String(path).replace(/\/?$/, '/');
+    if (location.protocol === 'file:') return `https://dmitrii-elektron.es${base}`;
+    if (location.origin.includes('github.io')) return `${location.origin}${base}`;
+    return `${location.origin}${base}`;
   }
 
   function buildApproveUrl(reviewId) {

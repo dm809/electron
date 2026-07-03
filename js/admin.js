@@ -459,7 +459,10 @@
   }
 
   function showPublishedAlert(scope) {
-    const siteUrl = `${location.origin}${(SITE_CONFIG.basePath || '/electron/').replace(/\/?$/, '/')}index.html`;
+    const base = typeof window.getSiteBasePath === 'function'
+      ? getSiteBasePath()
+      : (SITE_CONFIG.basePath || '/electron/');
+    const siteUrl = `${location.origin}${String(base).replace(/\/?$/, '/')}index.html`;
     if (scope === 'global') {
       alert(`✓ Отзыв опубликован для ВСЕХ (база Supabase)!\n\nОткрой сайт и нажми Ctrl+F5:\n${siteUrl}`);
       window.open(siteUrl, '_blank');
