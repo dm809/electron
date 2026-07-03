@@ -1,0 +1,42 @@
+name: Publish review to site
+
+on:
+  repository_dispatch:
+    types: [publish_review]
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate PIN and add review
+        env:
+          REVIEW_PIN: ${{ secrets.REVIEW_PIN }}
+          PAYLOAD_PIN: ${{ github.event.client_payload.pin }}
+          PAYLOAD_NAME: ${{ github.event.client_payload.name }}
+          PAYLOAD_RATING: ${{ github.event.client_payload.rating }}
+          PAYLOAD_TEXT: ${{ github.event.client_payload.text }}
+          PAYLOAD_DATE: ${{ github.event.client_payload.date }}
+        run: |
+          if [ -z "$REVIEW_PIN" ]; then
+            echo "REVIEW_PIN secret missing — add it in repo Settings → Secrets"
+            exit 1
+          fi
+          if [ "$PAYLOAD_PIN" != "$REVIEW_PIN" ]; then
+            echo "Invalid PIN"
+            exit 1
+          fi
+          node scripts/add-review.mjs "$PAYLOAD_NAME" "$PAYLOAD_RATING" "$PAYLOAD_TEXT" "$PAYLOAD_DATE"
+
+      - name: Commit and push
+        run: |
+          git config user.name "ELEKTRON Bot"
+          git config user.email "gordienkodmytro9@gmail.com"
+          git add data/reviews.json
+          git diff --staged --quiet && echo "Nothing to commit" && exit 0
+          git commit -m "Publish review: ${{ github.event.client_payload.name }}"
+          git push

@@ -83,6 +83,7 @@
       Authorization: `Bearer ${token}`,
       Accept: 'application/vnd.github+json',
       'Content-Type': 'application/json',
+      'X-GitHub-Api-Version': '2022-11-28',
     };
 
     let sha;
@@ -114,6 +115,59 @@
     return { ok: true };
   }
 
+  async function publishViaDispatch(review, pin, token) {
+    if (!token || !pin) return { ok: false, reason: 'no_token' };
+
+    const res = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/dispatches`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/vnd.github+json',
+        'Content-Type': 'application/json',
+        'X-GitHub-Api-Version': '2022-11-28',
+      },
+      body: JSON.stringify({
+        event_type: 'publish_review',
+        client_payload: {
+          pin: String(pin).trim(),
+          name: review.name,
+          rating: String(review.rating),
+          text: review.text,
+          date: review.date || new Date().toISOString(),
+        },
+      }),
+    });
+
+    if (res.status === 204 || res.ok) return { ok: true };
+    return { ok: false, reason: 'dispatch', status: res.status };
+  }
+
+  /** Публикация: dispatch → прямой push → скачать JSON */
+  async function publishReview(review, pin) {
+    const token = getGitHubToken();
+    const normalized = normalizeReview(review);
+    if (!normalized) return { scope: 'invalid' };
+
+    if (token && pin) {
+      const dispatched = await publishViaDispatch(normalized, pin, token);
+      if (dispatched.ok) return { scope: 'dispatch' };
+    }
+
+    if (token) {
+      const current = await fetchFromSite(8000);
+      const merged = mergeReviews(current, [normalized]);
+      const pushed = await pushToGitHub(merged);
+      if (pushed.ok) return { scope: 'site', merged };
+    }
+
+    if (!token) return { scope: 'no_token' };
+
+    const current = await fetchFromSite(8000);
+    const merged = mergeReviews(current, [normalized]);
+    downloadJson(merged);
+    return { scope: 'download', merged };
+  }
+
   function downloadJson(reviews) {
     const blob = new Blob([JSON.stringify(reviews, null, 2) + '\n'], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -129,6 +183,8 @@
     mergeReviews,
     fetchFromSite,
     pushToGitHub,
+    publishViaDispatch,
+    publishReview,
     downloadJson,
     getGitHubToken,
     setGitHubToken,

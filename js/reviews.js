@@ -104,20 +104,19 @@
   }
 
   async function renderReviews() {
-    paintReviews(buildApprovedList());
-
-    const local = loadLocalApproved();
     const config = SITE_CONFIG.reviews || [];
+    paintReviews(config);
+
     const siteJson = await fetchSiteJsonReviews();
-    paintReviews(mergeApproved(siteJson, local, config));
+    paintReviews(mergeApproved(siteJson, config));
 
     if (!window.SupabaseReviews || !SupabaseReviews.isConfigured()) return;
 
     try {
       const remote = await SupabaseReviews.fetchApproved(8000);
-      paintReviews(mergeApproved(remote, siteJson, local, config));
+      paintReviews(mergeApproved(remote, siteJson, config));
     } catch {
-      /* Supabase offline — site JSON + local still shown */
+      /* Supabase offline — data/reviews.json still shown */
     }
   }
 
