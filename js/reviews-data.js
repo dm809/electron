@@ -1,5 +1,17 @@
-/** Отзывы на сайте — 5 правдоподобных + реальный от volf */
+/** Отзывы на сайте */
 const SITE_REVIEWS = [
+  {
+    name: 'Alejandro',
+    rating: 5,
+    text: 'Muchas gracias por tu ayuda, ahora mi aire funciona bien!',
+    date: '2026-07-03T17:15:17.000Z',
+  },
+  {
+    name: 'DOMYKA',
+    rating: 5,
+    text: 'Un servicio excelente. El técnico Dmitry trabaja de forma rápida y muy profesional. Repara placas electrónicas de cualquier nivel de complejidad.',
+    date: '2026-07-03T17:32:43.000Z',
+  },
   {
     name: 'Igor K.',
     rating: 5,

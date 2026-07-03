@@ -7,7 +7,7 @@ ELEKTRON — GitHub Pages (dm809/electron)
 
 ОДИН РАЗ В GITHUB (Settings → Pages)
 -------------------------------------
-1. Build and deployment → Source: GitHub Actions  (НЕ "Deploy from branch")
+1. Build and deployment → Source: Deploy from branch → main / (root)
 2. Custom domain: dmitrii-elektron.es
 3. Enforce HTTPS: включить
 
@@ -25,9 +25,9 @@ CNAME www  dm809.github.io
 
 Публикация
 ----------
-git push origin main  →  Actions → "Deploy ELEKTRON site" (зелёная галочка)
+git push origin main  →  Actions → "pages build and deployment" (зелёная галочка)
 
 Отзывы
 ------
-5 отзывов в index.html + js/reviews-data.js
+7 отзывов в index.html + js/reviews-data.js (Alejandro, DOMYKA + 5)
 Новый отзыв с сайта → почта gordienkodmytro9@gmail.com
