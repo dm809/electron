@@ -53,11 +53,11 @@
     return `${r.name}|${r.rating}|${r.text}`.toLowerCase();
   }
 
-  function mergeApproved(remote, local, config) {
+  function mergeApproved(...lists) {
     const seen = new Set();
     const out = [];
 
-    [...remote, ...local, ...config].forEach((r) => {
+    lists.filter(Array.isArray).flat().forEach((r) => {
       if (!r || !r.name || !r.text) return;
       const key = reviewKey(r);
       if (seen.has(key)) return;
@@ -66,6 +66,12 @@
     });
 
     return out;
+  }
+
+  function getEmbeddedReviews() {
+    if (typeof SITE_REVIEWS !== 'undefined' && SITE_REVIEWS.length) return SITE_REVIEWS;
+    if (typeof SITE_CONFIG !== 'undefined' && SITE_CONFIG.reviews?.length) return SITE_CONFIG.reviews;
+    return [];
   }
 
   function buildApprovedList() {
@@ -104,13 +110,16 @@
   }
 
   async function renderReviews() {
-    const config = SITE_CONFIG.reviews || [];
-    if (config.length) paintReviews(mergeApproved(config, []));
+    const embedded = getEmbeddedReviews();
+    paintReviews(embedded);
 
-    const siteJson = await fetchSiteJsonReviews();
-    const merged = mergeApproved(siteJson, config);
-    if (merged.length) paintReviews(merged);
-    else if (!config.length) paintReviews([]);
+    try {
+      const siteJson = await fetchSiteJsonReviews();
+      const merged = mergeApproved(embedded, siteJson);
+      if (merged.length) paintReviews(merged);
+    } catch (err) {
+      console.warn('Reviews fetch skipped:', err);
+    }
   }
 
   function adminBaseUrl() {
@@ -140,37 +149,37 @@
     return `${adminBaseUrl()}admin.html?${q.toString()}`;
   }
 
-  async function notifyOwnerByEmail(review, reviewId) {
+  async function notifyOwnerByEmail(review) {
     const email = SITE_CONFIG.notifyEmail;
-    if (!email) return;
+    if (!email) throw new Error('notify email not configured');
 
     const stars = '★'.repeat(review.rating) + '☆'.repeat(5 - review.rating);
-    const approveUrl = reviewId ? buildApproveUrl(reviewId) : null;
-    const publishUrl = buildPublishUrl(review);
-    const mainLink = approveUrl || publishUrl;
 
     try {
-      await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(email)}`, {
+      const res = await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(email)}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify({
-          _subject: '⭐ Новый отзыв ELEKTRON — нажми ОПУБЛИКОВАТЬ',
+          _subject: '⭐ Новый отзыв ELEKTRON',
           _template: 'table',
           _captcha: 'false',
           name: review.name,
           rating: `${stars} (${review.rating}/5)`,
           message: review.text,
-          '👉 ОПУБЛИКОВАТЬ (нажми эту ссылку)': mainLink,
-          'Запасная ссылка': publishUrl,
+          'Дата': new Date().toLocaleString('es-ES'),
         }),
       });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      if (String(data.success) !== 'true') throw new Error('FormSubmit rejected');
     } catch (err) {
       console.warn('Email notify failed:', err);
+      throw err;
     }
   }
 
   async function submitReview(review) {
-    await notifyOwnerByEmail(review, null);
+    await notifyOwnerByEmail(review);
     return { ok: true };
   }
 
