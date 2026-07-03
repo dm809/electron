@@ -1,28 +1,33 @@
-ELEKTRON — публикация на GitHub Pages
-======================================
+ELEKTRON — GitHub Pages (dm809/electron)
+=========================================
 
-Логин GitHub: qwertyuiop123
-Репозиторий:   elektron
-Сайт:          https://qwertyuiop123.github.io/elektron/
+Сайт:     https://dmitrii-elektron.es/
+Резерв:   https://dm809.github.io/electron/
+Репо:     https://github.com/dm809/electron
 
-БЫСТРЫЙ СПОСОБ
---------------
-Дважды клик:  C:\ELEKTRON\PUSH_TO_GITHUB.bat
+ОДИН РАЗ В GITHUB (Settings → Pages)
+-------------------------------------
+1. Build and deployment → Source: GitHub Actions  (НЕ "Deploy from branch")
+2. Custom domain: dmitrii-elektron.es
+3. Enforce HTTPS: включить
 
-ВРУЧНУЮ
--------
-1. https://github.com/new  →  имя elektron, Public, без README
-2. cd C:\ELEKTRON
-   git push -u origin main
-3. https://github.com/qwertyuiop123/elektron/settings/pages
-   Branch: main / (root) / Save
+DNS в DonDominio (dmitrii-elektron.es)
+--------------------------------------
+A     @    185.199.108.153
+A     @    185.199.109.153
+A     @    185.199.110.153
+A     @    185.199.111.153
+AAAA  @    2606:50c0:8000::153
+AAAA  @    2606:50c0:8001::153
+AAAA  @    2606:50c0:8002::153
+AAAA  @    2606:50c0:8003::153
+CNAME www  dm809.github.io
 
-ФОТО
-----
-Ярлык на рабочем столе: ELEKTRON - Foto
-Папка: C:\ELEKTRON\images
+Публикация
+----------
+git push origin main  →  Actions → "Deploy ELEKTRON site" (зелёная галочка)
 
-После новых фото:
-  git add images/
-  git commit -m "novye foto"
-  git push
+Отзывы
+------
+5 отзывов в index.html + js/reviews-data.js
+Новый отзыв с сайта → почта gordienkodmytro9@gmail.com

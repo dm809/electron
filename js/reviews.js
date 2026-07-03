@@ -89,10 +89,7 @@
     const list = document.getElementById('reviews-list');
     if (!list) return;
 
-    if (!all.length) {
-      list.innerHTML = `<p class="reviews__empty">${getT('reviewsEmpty')}</p>`;
-      return;
-    }
+    if (!all.length) return;
 
     list.innerHTML = all.map((r) => renderReviewCard(r)).join('');
   }
