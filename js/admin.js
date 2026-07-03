@@ -2,26 +2,19 @@
   'use strict';
 
   const PIN_KEY = 'elektron-admin-pin';
-  const LOCAL_APPROVED_KEY = 'elektron-approved-reviews';
-
-  let currentTab = 'pending';
   let adminPin = '';
-  let supabaseOk = false;
 
   const els = {
-    setup: document.getElementById('admin-setup'),
     login: document.getElementById('admin-login'),
     dashboard: document.getElementById('admin-dashboard'),
     loginForm: document.getElementById('login-form'),
     manualForm: document.getElementById('manual-form'),
     loginError: document.getElementById('login-error'),
-    loginWarn: document.getElementById('login-warn'),
     list: document.getElementById('admin-list'),
     empty: document.getElementById('admin-empty'),
-    count: document.getElementById('pending-count'),
+    count: document.getElementById('site-review-count'),
     refreshBtn: document.getElementById('refresh-btn'),
     logoutBtn: document.getElementById('logout-btn'),
-    tabs: document.querySelectorAll('.admin__tab'),
     manual: document.getElementById('admin-manual'),
   };
 
@@ -31,32 +24,6 @@
 
   function verifyPin(pin) {
     return String(pin).trim() === localPin();
-  }
-
-  function getSavedPin() {
-    return sessionStorage.getItem(PIN_KEY) || '';
-  }
-
-  function savePin(pin) {
-    sessionStorage.setItem(PIN_KEY, pin);
-    adminPin = pin;
-  }
-
-  function clearPin() {
-    sessionStorage.removeItem(PIN_KEY);
-    adminPin = '';
-  }
-
-  function loadLocalApproved() {
-    try {
-      return JSON.parse(localStorage.getItem(LOCAL_APPROVED_KEY) || '[]');
-    } catch {
-      return [];
-    }
-  }
-
-  function saveLocalApproved(list) {
-    localStorage.setItem(LOCAL_APPROVED_KEY, JSON.stringify(list));
   }
 
   function starsHtml(rating) {
@@ -69,7 +36,7 @@
   function formatDate(dateStr) {
     try {
       return new Date(dateStr).toLocaleString('ru', {
-        day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit',
+        day: 'numeric', month: 'long', year: 'numeric',
       });
     } catch {
       return dateStr || '';
@@ -85,7 +52,6 @@
   }
 
   function showPanel(name) {
-    els.setup.hidden = name !== 'setup';
     els.login.hidden = name !== 'login';
     els.dashboard.hidden = name !== 'dashboard';
   }
@@ -95,28 +61,44 @@
     els.loginError.hidden = !msg;
   }
 
-  function showWarn(msg) {
-    if (!els.loginWarn) return;
-    els.loginWarn.textContent = msg;
-    els.loginWarn.hidden = !msg;
+  function updateGitHubStatus(msg) {
+    const el = document.getElementById('github-status');
+    if (el) el.textContent = msg || '';
   }
 
-  function translateError(error) {
-    const msg = (error?.message || String(error)).toLowerCase();
-    if (msg.includes('invalid pin')) return 'Неверный PIN-код';
-    if (msg.includes('function') && msg.includes('does not exist')) {
-      return 'Запусти supabase-admin-pin.sql в Supabase → SQL Editor (обновлённая версия)';
+  function getGitHubTokenField() {
+    const el = document.getElementById('github-token');
+    return el ? el.value.trim() : '';
+  }
+
+  function saveGitHubTokenFromField() {
+    const token = getGitHubTokenField();
+    if (!token) {
+      SiteReviewsStore.setGitHubToken('');
+      updateGitHubStatus('Token не сохранён.');
+      return false;
     }
-    if (msg.includes('failed to fetch') || msg.includes('network') || msg.includes('abort')) {
-      return 'Supabase недоступен. Отзывы приходят на email — публикуй вручную ниже.';
+    if (!token.startsWith('ghp_') && !token.startsWith('github_pat_')) {
+      updateGitHubStatus('Нужна строка ghp_... (classic token, галочка repo)');
+      return false;
     }
-    return error?.message || 'Ошибка';
+    SiteReviewsStore.setGitHubToken(token);
+    updateGitHubStatus('✓ Token сохранён.');
+    const btn = document.getElementById('github-sync-btn');
+    if (btn) btn.textContent = 'Token сохранён ✓';
+    return true;
+  }
+
+  function ensureGitHubToken() {
+    if (SiteReviewsStore.getGitHubToken()) return true;
+    if (getGitHubTokenField()) return saveGitHubTokenFromField();
+    updateGitHubStatus('Вставь GitHub token и нажми «Сохранить token».');
+    return false;
   }
 
   function getUrlParams() {
     const p = new URLSearchParams(location.search);
     return {
-      approveId: p.get('approve'),
       pin: p.get('pin'),
       pub: p.get('pub') === '1',
       name: p.get('name'),
@@ -129,266 +111,82 @@
     history.replaceState({}, '', 'admin.html');
   }
 
-  async function tryAutoActionFromEmail() {
+  async function tryAutoPublishFromEmail() {
     const params = getUrlParams();
+    if (!params.pub || !params.name || !params.text) return false;
 
-    if (params.pin && verifyPin(params.pin)) {
-      adminPin = params.pin.trim();
-      savePin(adminPin);
-    }
+    if (params.pin && verifyPin(params.pin)) adminPin = params.pin.trim();
 
-    if (params.pub && params.name && params.text) {
-      if (!adminPin) {
-        showPanel('login');
-        if (params.pin) document.getElementById('admin-pin').value = params.pin;
-        showWarn('Нажми «Войти» (PIN уже вставлен) — отзыв опубликуется автоматически.');
-        return false;
-      }
-
-      await checkSupabase();
-      try {
-        const result = await publishManual(params.name, params.rating, params.text);
-        clearUrlParams();
-        showPanel('dashboard');
-        currentTab = 'approved';
-        els.tabs.forEach((t) => t.classList.toggle('admin__tab--active', t.dataset.tab === 'approved'));
-        showPublishedAlert(result.scope);
-        await loadReviews();
-        return true;
-      } catch (err) {
-        showPanel('dashboard');
-        showWarn(translateError(err));
-        return false;
-      }
-    }
-
-    if (params.approveId) {
-      if (!adminPin) {
-        showPanel('login');
-        if (params.pin) document.getElementById('admin-pin').value = params.pin;
-        showWarn('Нажми «Войти» — отзыв опубликуется автоматически.');
-        return false;
-      }
-
-      await checkSupabase();
-      if (!supabaseOk) {
-        showPanel('dashboard');
-        showWarn('База offline — используй «Запасную ссылку» из письма или опубликуй вручную.');
-        return false;
-      }
-
-      await SupabaseReviews.rpc('admin_set_status', {
-        p_pin: adminPin,
-        p_id: params.approveId,
-        p_status: 'approved',
-      }, 8000);
-      clearUrlParams();
-      showPanel('dashboard');
-      currentTab = 'approved';
-      els.tabs.forEach((t) => t.classList.toggle('admin__tab--active', t.dataset.tab === 'approved'));
-      showPublishedAlert('global');
-      await loadReviews();
-      return true;
-    }
-
-    return false;
-  }
-
-  async function checkSupabase() {
-    if (!SupabaseReviews.isConfigured()) {
-      supabaseOk = false;
+    if (!adminPin) {
+      showPanel('login');
+      if (params.pin) document.getElementById('admin-pin').value = params.pin;
+      showError('');
+      updateGitHubStatus('Войди PIN 472891 — отзыв из письма опубликуется сам.');
       return false;
     }
-    sessionStorage.removeItem('elektron-supabase-skip');
-    const result = await SupabaseReviews.testConnection(8000);
-    supabaseOk = result.ok;
-    return supabaseOk;
+
+    showPanel('dashboard');
+    await publishReview(params.name, params.rating, params.text);
+    clearUrlParams();
+    return true;
   }
 
   async function init() {
     const params = getUrlParams();
     if (params.pin) document.getElementById('admin-pin').value = params.pin;
 
-    if (await tryAutoActionFromEmail()) return;
-
-    await checkSupabase();
-
-    const saved = getSavedPin();
+    const saved = sessionStorage.getItem(PIN_KEY);
     if (saved && verifyPin(saved)) {
       adminPin = saved;
       showPanel('dashboard');
-      showGitHubHint();
-      if (!supabaseOk) {
-        showWarn('Отзывы приходят на email. Опубликуй вручную ↓ или по ссылке из письма.');
-      }
+      if (await tryAutoPublishFromEmail()) return;
       await loadReviews();
       return;
     }
 
-    if (params.approveId || params.pub) {
+    if (params.pub) {
       showPanel('login');
+      updateGitHubStatus('Войди PIN 472891 для публикации из email.');
       return;
     }
 
     showPanel('login');
-  }
-
-  function showGitHubHint() {
-    if (!window.SiteReviewsStore || SiteReviewsStore.getGitHubToken()) return;
-    showWarn('⚠ Сначала нажми «Подключить GitHub» — иначе отзывы не попадут на сайт для всех.');
-  }
-
-  function getGitHubTokenField() {
-    const el = document.getElementById('github-token');
-    return el ? el.value.trim() : '';
-  }
-
-  function updateGitHubStatus(msg) {
-    const el = document.getElementById('github-status');
-    if (el) el.textContent = msg || '';
-  }
-
-  function saveGitHubTokenFromField() {
-    const token = getGitHubTokenField();
-    if (!token) {
-      SiteReviewsStore.setGitHubToken('');
-      updateGitHubStatus('Token не сохранён.');
-      const btn = document.getElementById('github-sync-btn');
-      if (btn) btn.textContent = 'Сохранить token';
-      return false;
-    }
-    if (!token.startsWith('ghp_') && !token.startsWith('github_pat_')) {
-      updateGitHubStatus('Это не GitHub token. Нужна строка ghp_...');
-      return false;
-    }
-    SiteReviewsStore.setGitHubToken(token);
-    updateGitHubStatus('✓ GitHub token сохранён в этой вкладке.');
-    const btn = document.getElementById('github-sync-btn');
-    if (btn) btn.textContent = 'Token сохранён ✓';
-    return true;
-  }
-
-  function ensureGitHubToken() {
-    if (SiteReviewsStore.getGitHubToken()) return true;
-    const fieldToken = getGitHubTokenField();
-    if (fieldToken) return saveGitHubTokenFromField();
-    updateGitHubStatus('Вставь GitHub token в поле ниже и нажми «Сохранить token».');
-    document.getElementById('github-token')?.focus();
-    return false;
   }
 
   async function login(pin) {
     showError('');
     const cleanPin = String(pin).trim();
-
     if (!verifyPin(cleanPin)) {
-      showError('Неверный PIN. По умолчанию: 472891');
+      showError('Неверный PIN. Введи: 472891');
       return;
     }
-
-    await checkSupabase();
-    savePin(cleanPin);
     adminPin = cleanPin;
-
-    if (await tryAutoActionFromEmail()) return;
-
+    sessionStorage.setItem(PIN_KEY, cleanPin);
     showPanel('dashboard');
-
-    showGitHubHint();
-    if (!supabaseOk) {
-      showWarn('Отзывы приходят на email. Опубликуй вручную ↓ или по ссылке из письма.');
-    }
-
+    if (await tryAutoPublishFromEmail()) return;
     await loadReviews();
   }
 
   function logout() {
-    clearPin();
+    sessionStorage.removeItem(PIN_KEY);
+    adminPin = '';
     showPanel('login');
     showError('');
-    showWarn('');
     document.getElementById('admin-pin').value = '';
   }
 
-  async function fetchReviews(status) {
-    if (supabaseOk) {
-      try {
-        const data = await SupabaseReviews.rpc('admin_get_reviews', {
-          p_pin: adminPin,
-          p_status: status,
-        }, 5000);
-        return data || [];
-      } catch (err) {
-        console.warn('Supabase RPC failed:', err);
-        supabaseOk = false;
-      }
-    }
-
-    if (status === 'approved') {
-      const local = loadLocalApproved().map((r, i) => ({
-        id: `local-a-${i}`,
-        name: r.name,
-        rating: r.rating,
-        text: r.text,
-        created_at: r.date,
-        status: 'approved',
-        _localIndex: i,
-      }));
-
-      if (window.SiteReviewsStore) {
-        const site = await SiteReviewsStore.fetchFromSite(5000);
-        const fromSite = site.map((r, i) => ({
-          id: `site-${i}`,
-          name: r.name,
-          rating: r.rating,
-          text: r.text,
-          created_at: r.date,
-          status: 'approved',
-        }));
-        return SiteReviewsStore.mergeReviews(fromSite, local).map((r, i) => ({
-          id: r.id || `merged-${i}`,
-          ...r,
-          status: 'approved',
-        }));
-      }
-
-      return local;
-    }
-
-    return [];
-  }
-
-  function pluralReviews(n) {
-    const mod10 = n % 10;
-    const mod100 = n % 100;
-    if (mod10 === 1 && mod100 !== 11) return 'отзыв';
-    if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return 'отзыва';
-    return 'отзывов';
-  }
-
-  function renderCard(review) {
-    const isPending = review.status === 'pending';
-
-    const actions = isPending
-      ? `
-        <div class="admin-card__actions">
-          <button type="button" class="btn btn--sm btn--approve" data-action="approve" data-id="${review.id}">✓ Опубликовать</button>
-          <button type="button" class="btn btn--sm btn--reject" data-action="reject" data-id="${review.id}">✕ Отклонить</button>
-        </div>`
-      : `
-        <div class="admin-card__actions">
-          <button type="button" class="btn btn--sm btn--reject" data-action="delete" data-id="${review.id}">Удалить</button>
-        </div>`;
-
+  function renderCard(review, index) {
     return `
-      <article class="admin-card${isPending ? ' admin-card--pending' : ''}">
+      <article class="admin-card">
         <div class="admin-card__head">
           <strong>${escapeHtml(review.name)}</strong>
-          <time>${formatDate(review.created_at)}</time>
+          <time>${formatDate(review.date)}</time>
         </div>
         <div class="star-display">${starsHtml(review.rating)}</div>
         <p class="admin-card__text">${escapeHtml(review.text)}</p>
-        ${actions}
+        <div class="admin-card__actions">
+          <button type="button" class="btn btn--sm btn--reject" data-action="delete" data-index="${index}">Удалить</button>
+        </div>
       </article>`;
   }
 
@@ -396,154 +194,74 @@
     els.list.innerHTML = '<p class="admin__loading">Загрузка...</p>';
     els.empty.hidden = true;
 
-    if (els.manual) {
-      els.manual.hidden = currentTab !== 'pending';
+    const reviews = await SiteReviewsStore.fetchFromSite(8000);
+    if (els.count) {
+      els.count.textContent = `На сайте сейчас: ${reviews.length} ${reviews.length === 1 ? 'отзыв' : 'отзыва(ов)'}`;
     }
 
-    try {
-      const status = currentTab === 'pending' ? 'pending' : 'approved';
-      const reviews = await fetchReviews(status);
-
-      const pending = await fetchReviews('pending');
-      els.count.textContent = `${pending.length} ${pluralReviews(pending.length)}`;
-
-      if (!reviews.length) {
-        els.list.innerHTML = '';
-        els.empty.hidden = false;
-        if (currentTab === 'pending' && !supabaseOk) {
-          els.empty.textContent = 'Ожидающих в базе нет (Supabase offline). Скопируй отзыв из email → форма внизу ↓';
-        } else {
-          els.empty.textContent = 'Нет отзывов в этой вкладке';
-        }
-        return;
-      }
-
-      els.list.innerHTML = reviews.map(renderCard).join('');
-    } catch (err) {
-      console.error(err);
-      els.list.innerHTML = `<p class="admin__error">${escapeHtml(translateError(err))}</p>`;
-    }
-  }
-
-  async function approveReview(id) {
-    if (!supabaseOk || String(id).startsWith('local-')) {
-      throw new Error('Используй форму «Опубликовать вручную» или восстанови Supabase');
-    }
-    await SupabaseReviews.rpc('admin_set_status', {
-      p_pin: adminPin,
-      p_id: id,
-      p_status: 'approved',
-    }, 5000);
-
-    const pending = await SupabaseReviews.rpc('admin_get_reviews', {
-      p_pin: adminPin,
-      p_status: 'approved',
-    }, 5000);
-    const row = (pending || []).find((r) => r.id === id);
-    if (row) await syncReviewToSiteFile(row);
-  }
-
-  async function rejectReview(id) {
-    if (!supabaseOk) throw new Error('Supabase offline');
-    await SupabaseReviews.rpc('admin_set_status', {
-      p_pin: adminPin,
-      p_id: id,
-      p_status: 'rejected',
-    }, 5000);
-  }
-
-  async function deleteReview(id) {
-    if (!confirm('Удалить этот отзыв навсегда?')) return;
-
-    if (String(id).startsWith('local-a-')) {
-      const approved = loadLocalApproved();
-      approved.splice(Number(String(id).replace('local-a-', '')), 1);
-      saveLocalApproved(approved);
+    if (!reviews.length) {
+      els.list.innerHTML = '';
+      els.empty.hidden = false;
+      els.empty.textContent = 'На сайте пока нет отзывов. Опубликуй первый ↓';
       return;
     }
 
-    if (String(id).startsWith('site-') || String(id).startsWith('merged-')) {
-      if (!ensureGitHubToken()) throw new Error('Подключи GitHub для удаления');
-      const site = await SiteReviewsStore.fetchFromSite(8000);
-      const idx = Number(String(id).replace(/^(site-|merged-)/, ''));
-      const list = [...site];
-      if (!Number.isNaN(idx) && idx >= 0 && idx < list.length) {
-        list.splice(idx, 1);
-        const pushed = await SiteReviewsStore.pushToGitHub(list);
-        if (!pushed.ok) throw new Error('Не удалось обновить reviews.json на GitHub');
-      }
+    els.list.innerHTML = reviews.map((r, i) => renderCard(r, i)).join('');
+  }
+
+  async function publishReview(name, rating, text) {
+    if (!ensureGitHubToken()) {
+      const merged = SiteReviewsStore.mergeReviews(
+        await SiteReviewsStore.fetchFromSite(8000),
+        [{ name, rating, text, date: new Date().toISOString() }]
+      );
+      await SiteReviewsStore.copyJsonForManualEdit(merged);
+      alert(
+        'Token не настроен.\n\n1. JSON скопирован / скачан\n2. Откроется GitHub — вставь JSON в data/reviews.json\n3. Commit changes\n\nЧерез 1–2 мин отзыв на сайте.'
+      );
       return;
     }
 
-    if (!supabaseOk) throw new Error('Supabase offline');
-    await SupabaseReviews.rpc('admin_delete_review', {
-      p_pin: adminPin,
-      p_id: id,
-    }, 5000);
+    const result = await SiteReviewsStore.publishReview({ name, rating, text });
+
+    if (result.ok) {
+      alert('✓ Отзыв на сайте! Подожди 1–2 мин → Ctrl+F5 на главной.');
+      window.open(`${location.origin}${(typeof getSiteBasePath === 'function' ? getSiteBasePath() : '/')}index.html`, '_blank');
+      await loadReviews();
+      return;
+    }
+
+    if (result.scope === 'no_token' && result.merged) {
+      await SiteReviewsStore.copyJsonForManualEdit(result.merged);
+      alert('Автопубликация не вышла. JSON скопирован — вставь на GitHub в data/reviews.json');
+      return;
+    }
+
+    if (result.merged) {
+      await SiteReviewsStore.copyJsonForManualEdit(result.merged);
+      alert(`Ошибка: ${result.error || 'неизвестно'}\n\nJSON скопирован — вставь вручную на GitHub:\n${SiteReviewsStore.editUrl}`);
+    } else {
+      alert(`Ошибка: ${result.error || 'не удалось опубликовать'}`);
+    }
   }
 
-  async function publishManual(name, rating, text) {
-    const review = {
-      name,
-      rating,
-      text,
-      date: new Date().toISOString(),
-    };
+  async function deleteReview(index) {
+    if (!confirm('Удалить этот отзыв с сайта?')) return;
+    const reviews = await SiteReviewsStore.fetchFromSite(8000);
+    reviews.splice(index, 1);
 
     if (!ensureGitHubToken()) {
-      throw new Error('Без GitHub token отзыв не попадёт на сайт. Нажми «Подключить GitHub».');
+      await SiteReviewsStore.copyJsonForManualEdit(reviews);
+      alert('Обнови JSON на GitHub вручную (файл открыт / скопирован).');
+      return;
     }
 
-    if (SupabaseReviews.isConfigured() && supabaseOk) {
-      try {
-        await SupabaseReviews.publishApproved(name, rating, text, adminPin, 8000);
-      } catch (err) {
-        console.warn('Supabase publish failed:', err);
-      }
-    }
-
-    const result = await SiteReviewsStore.publishReview(review, adminPin);
-    if (result.scope === 'no_token') {
-      throw new Error('Подключи GitHub token — иначе отзывы не видны на сайте.');
-    }
-    return result;
-  }
-
-  function showPublishedAlert(scope) {
-    const base = typeof window.getSiteBasePath === 'function'
-      ? getSiteBasePath()
-      : (SITE_CONFIG.basePath || '/electron/');
-    const siteUrl = `${location.origin}${String(base).replace(/\/?$/, '/')}index.html`;
-    if (scope === 'global') {
-      alert(`✓ Отзыв опубликован для ВСЕХ (база Supabase)!\n\nОткрой сайт и нажми Ctrl+F5:\n${siteUrl}`);
-      window.open(siteUrl, '_blank');
+    const pushed = await SiteReviewsStore.pushToGitHub(reviews);
+    if (!pushed.ok) {
+      alert(SiteReviewsStore.formatGhError(pushed));
       return;
     }
-    if (scope === 'dispatch') {
-      alert(`✓ Отзыв отправлен на сайт!\n\nПодожди 1–2 мин и Ctrl+F5:\n${siteUrl}`);
-      window.open(siteUrl, '_blank');
-      return;
-    }
-    if (scope === 'site') {
-      alert(`✓ Отзыв на сайте для ВСЕХ!\n\nGitHub обновлён — подожди 1–2 мин и Ctrl+F5:\n${siteUrl}`);
-      window.open(siteUrl, '_blank');
-      return;
-    }
-    if (scope === 'download') {
-      alert(`Отзыв в файле reviews.json (скачан).\n\nЗагрузи на GitHub: data/reviews.json`);
-      return;
-    }
-    if (scope === 'no_token') {
-      alert('Подключи GitHub token — иначе отзывы не видны на сайте.');
-      return;
-    }
-    alert(`Ошибка публикации. Проверь GitHub token и секрет REVIEW_PIN в репозитории.`);
-  }
-
-  async function syncReviewToSiteFile(review) {
-    if (!window.SiteReviewsStore) return { scope: 'local' };
-    if (!ensureGitHubToken()) return { scope: 'no_token' };
-    return SiteReviewsStore.publishReview(review, adminPin);
+    await loadReviews();
   }
 
   els.loginForm.addEventListener('submit', (e) => {
@@ -551,83 +269,47 @@
     login(document.getElementById('admin-pin').value);
   });
 
-  if (els.manualForm) {
-    els.manualForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const name = document.getElementById('manual-name').value.trim();
-      const rating = Number(document.getElementById('manual-rating').value);
-      const text = document.getElementById('manual-text').value.trim();
-      const btn = els.manualForm.querySelector('button[type="submit"]');
+  els.manualForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = document.getElementById('manual-name').value.trim();
+    const rating = Number(document.getElementById('manual-rating').value);
+    const text = document.getElementById('manual-text').value.trim();
+    const btn = els.manualForm.querySelector('button[type="submit"]');
+    if (!name || !text) return;
 
-      if (!name || !text) return;
-
-      btn.disabled = true;
-      try {
-        const result = await publishManual(name, rating, text);
-        els.manualForm.reset();
-        document.getElementById('manual-rating').value = '5';
-        showPublishedAlert(result.scope);
-        currentTab = 'approved';
-        els.tabs.forEach((t) => t.classList.toggle('admin__tab--active', t.dataset.tab === 'approved'));
-        await loadReviews();
-      } catch (err) {
-        alert(translateError(err));
-      } finally {
-        btn.disabled = false;
-      }
-    });
-  }
-
-  els.logoutBtn.addEventListener('click', logout);
-  els.refreshBtn.addEventListener('click', async () => {
-    await checkSupabase();
-    loadReviews();
-  });
-
-  els.tabs.forEach((tab) => {
-    tab.addEventListener('click', () => {
-      currentTab = tab.dataset.tab;
-      els.tabs.forEach((t) => t.classList.toggle('admin__tab--active', t === tab));
-      loadReviews();
-    });
-  });
-
-  els.list.addEventListener('click', async (e) => {
-    const btn = e.target.closest('[data-action]');
-    if (!btn) return;
-
-    const { action, id } = btn.dataset;
     btn.disabled = true;
-
     try {
-      if (action === 'approve') await approveReview(id);
-      else if (action === 'reject') await rejectReview(id);
-      else if (action === 'delete') await deleteReview(id);
-      await loadReviews();
-    } catch (err) {
-      console.error(err);
-      alert(translateError(err));
+      await publishReview(name, rating, text);
+      els.manualForm.reset();
+      document.getElementById('manual-rating').value = '5';
     } finally {
       btn.disabled = false;
     }
   });
 
-  function initGitHubSync() {
-    const btn = document.getElementById('github-sync-btn');
-    if (!btn || !window.SiteReviewsStore) return;
+  els.logoutBtn.addEventListener('click', logout);
+  els.refreshBtn.addEventListener('click', loadReviews);
 
-    if (SiteReviewsStore.getGitHubToken()) {
-      btn.textContent = 'Token сохранён ✓';
-      updateGitHubStatus('✓ GitHub token уже сохранён в этой вкладке.');
+  els.list.addEventListener('click', async (e) => {
+    const btn = e.target.closest('[data-action="delete"]');
+    if (!btn) return;
+    btn.disabled = true;
+    try {
+      await deleteReview(Number(btn.dataset.index));
+    } finally {
+      btn.disabled = false;
     }
+  });
 
-    btn.addEventListener('click', () => {
-      if (saveGitHubTokenFromField()) {
-        alert('Token сохранён. Теперь «Опубликовать» отправит отзыв на сайт для всех.');
-      }
-    });
-  }
+  document.getElementById('github-sync-btn')?.addEventListener('click', () => {
+    if (saveGitHubTokenFromField()) alert('Token сохранён. Теперь «Опубликовать» работает автоматически.');
+  });
 
-  initGitHubSync();
+  document.getElementById('github-edit-btn')?.addEventListener('click', async () => {
+    const reviews = await SiteReviewsStore.fetchFromSite(8000);
+    await SiteReviewsStore.copyJsonForManualEdit(reviews);
+    alert('JSON скопирован. На GitHub нажми Commit changes.');
+  });
+
   init();
 })();

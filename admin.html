@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="robots" content="noindex, nofollow">
-  <title>Модерация отзывов — ELEKTRON</title>
+  <title>Отзывы — ELEKTRON</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -21,44 +21,27 @@
 
       <header class="admin__header">
         <a href="index.html" class="admin__back">← На сайт</a>
-        <h1>Модерация отзывов</h1>
-        <p class="admin__subtitle">Только для владельца · клиенты не видят эту страницу</p>
+        <h1>Отзывы на сайте</h1>
+        <p class="admin__subtitle">Просто: вставил → опубликовал → видно всем</p>
       </header>
 
-      <!-- Настройка не завершена -->
-      <section class="admin__panel" id="admin-setup" hidden>
-        <h2>Нужна одноразовая настройка</h2>
-        <ol class="admin__steps">
-          <li>Зайди на <a href="https://supabase.com" target="_blank" rel="noopener">supabase.com</a> → создай бесплатный проект</li>
-          <li>SQL Editor → вставь код из файла <code>supabase-setup.sql</code> → Run</li>
-          <li>Settings → API → скопируй <strong>URL</strong> и <strong>anon public key</strong> в <code>js/config.js</code></li>
-          <li>Authentication → Users → Add user (твой email и пароль для входа сюда)</li>
-          <li>Обнови сайт на GitHub</li>
-        </ol>
-      </section>
-
-      <!-- Вход по PIN -->
       <section class="admin__panel" id="admin-login">
-        <h2>Вход в модерацию</h2>
-        <p class="admin__hint">PIN — только цифры <strong>472891</strong>. GitHub token сюда НЕ вставлять!</p>
+        <h2>Вход</h2>
+        <p class="admin__hint">PIN: <strong>472891</strong> (не GitHub token!)</p>
         <form class="admin__form" id="login-form">
           <label class="reviews__field">
-            <span>PIN-код (6 цифр)</span>
-            <input type="password" id="admin-pin" required inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" maxlength="12" placeholder="472891">
+            <span>PIN-код</span>
+            <input type="password" id="admin-pin" required inputmode="numeric" maxlength="12" placeholder="472891">
           </label>
           <button type="submit" class="btn btn--primary admin__btn">Войти</button>
           <p class="admin__error" id="login-error" hidden></p>
-          <p class="admin__warn" id="login-warn" hidden></p>
         </form>
-        <p class="admin__hint admin__hint--small">Первый раз FormSubmit: проверь почту <strong>gordienkodmytro9@gmail.com</strong> (и спам) — письмо «Activate Form» → нажми ссылку. После этого отзывы будут приходить на email.</p>
       </section>
 
-      <!-- Панель модерации -->
       <section class="admin__panel" id="admin-dashboard" hidden>
         <div class="admin__toolbar">
           <div>
-            <h2>На проверке</h2>
-            <p class="admin__count" id="pending-count">0 отзывов</p>
+            <p class="admin__count" id="site-review-count">На сайте: …</p>
           </div>
           <div class="admin__toolbar-actions">
             <button type="button" class="btn btn--sm" id="refresh-btn">Обновить</button>
@@ -66,49 +49,46 @@
           </div>
         </div>
 
-        <div class="admin__tabs">
-          <button type="button" class="admin__tab admin__tab--active" data-tab="pending">Ожидают</button>
-          <button type="button" class="admin__tab" data-tab="approved">Опубликованные</button>
-        </div>
-
         <div class="admin__list" id="admin-list"></div>
-        <p class="admin__empty" id="admin-empty" hidden>Нет отзывов в этой вкладке</p>
+        <p class="admin__empty" id="admin-empty" hidden>Нет отзывов</p>
 
         <div class="admin__manual" id="admin-manual">
-          <h3>Опубликовать отзыв вручную</h3>
-          <p class="admin__hint">Если отзыв пришёл на email — вставь сюда и нажми «Опубликовать»</p>
+          <h3>Опубликовать отзыв</h3>
+          <p class="admin__hint">Скопируй из email → вставь → Опубликовать</p>
           <form class="admin__form" id="manual-form">
             <label class="reviews__field">
-              <span>Имя клиента</span>
+              <span>Имя</span>
               <input type="text" id="manual-name" required maxlength="60">
             </label>
             <label class="reviews__field">
-              <span>Оценка (1–5)</span>
+              <span>Оценка 1–5</span>
               <input type="number" id="manual-rating" min="1" max="5" value="5" required>
             </label>
             <label class="reviews__field">
-              <span>Текст отзыва</span>
+              <span>Текст</span>
               <textarea id="manual-text" required maxlength="500" rows="3"></textarea>
             </label>
             <button type="submit" class="btn btn--primary admin__btn">Опубликовать на сайте</button>
           </form>
-          <p class="admin__hint admin__hint--small">1. Войди PIN <strong>472891</strong> → 2. Внизу вставь GitHub token → «Сохранить token»</p>
+
+          <hr style="margin:1.5rem 0;border:none;border-top:1px solid rgba(255,255,255,.1)">
+
+          <p class="admin__hint"><strong>GitHub token</strong> (один раз, для автопубликации)</p>
           <label class="reviews__field">
-            <span>GitHub token (начинается с ghp_)</span>
+            <span>Token ghp_...</span>
             <input type="password" id="github-token" autocomplete="off" placeholder="ghp_..." spellcheck="false">
           </label>
           <button type="button" class="btn btn--sm btn--primary" id="github-sync-btn">Сохранить token</button>
           <p class="admin__hint admin__hint--small" id="github-status"></p>
+          <button type="button" class="btn btn--sm" id="github-edit-btn">Или вставить вручную на GitHub</button>
         </div>
       </section>
 
     </div>
   </main>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/config.js?v=11"></script>
-  <script src="js/site-reviews-store.js?v=11"></script>
-  <script src="js/supabase-client.js?v=11"></script>
-  <script src="js/admin.js?v=11"></script>
+  <script src="js/config.js?v=12"></script>
+  <script src="js/site-reviews-store.js?v=12"></script>
+  <script src="js/admin.js?v=12"></script>
 </body>
 </html>

@@ -105,19 +105,8 @@
 
   async function renderReviews() {
     const config = SITE_CONFIG.reviews || [];
-    paintReviews(config);
-
     const siteJson = await fetchSiteJsonReviews();
     paintReviews(mergeApproved(siteJson, config));
-
-    if (!window.SupabaseReviews || !SupabaseReviews.isConfigured()) return;
-
-    try {
-      const remote = await SupabaseReviews.fetchApproved(8000);
-      paintReviews(mergeApproved(remote, siteJson, config));
-    } catch {
-      /* Supabase offline — data/reviews.json still shown */
-    }
   }
 
   function adminBaseUrl() {
@@ -177,19 +166,8 @@
   }
 
   async function submitReview(review) {
-    let reviewId = null;
-
-    if (window.SupabaseReviews && SupabaseReviews.isConfigured()) {
-      try {
-        const row = await SupabaseReviews.insertReview(review, 8000);
-        if (row && row.id) reviewId = row.id;
-      } catch (err) {
-        console.warn('Supabase insert failed:', err);
-      }
-    }
-
-    await notifyOwnerByEmail(review, reviewId);
-    return { ok: true, remote: Boolean(reviewId), id: reviewId };
+    await notifyOwnerByEmail(review, null);
+    return { ok: true };
   }
 
   function resetStarRating() {
