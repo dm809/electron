@@ -20,7 +20,7 @@
   --gradient: linear-gradient(135deg, #06b6d4, #3b82f6);
   --radius: 16px;
   --radius-sm: 10px;
-  --font: 'Manrope', system-ui, sans-serif;
+  --font: 'Manrope', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --header-h: 72px;
 }
 
