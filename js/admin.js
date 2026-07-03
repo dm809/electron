@@ -238,16 +238,43 @@
     showWarn('⚠ Сначала нажми «Подключить GitHub» — иначе отзывы не попадут на сайт для всех.');
   }
 
-  function ensureGitHubToken() {
-    if (window.SiteReviewsStore && SiteReviewsStore.getGitHubToken()) return true;
-    const token = prompt(
-      'Нужен GitHub token (classic, галочка repo).\nСоздай: github.com → Settings → Developer settings → Tokens\n\nВставь token:'
-    );
-    if (!token || !token.trim()) return false;
-    SiteReviewsStore.setGitHubToken(token.trim());
+  function getGitHubTokenField() {
+    const el = document.getElementById('github-token');
+    return el ? el.value.trim() : '';
+  }
+
+  function updateGitHubStatus(msg) {
+    const el = document.getElementById('github-status');
+    if (el) el.textContent = msg || '';
+  }
+
+  function saveGitHubTokenFromField() {
+    const token = getGitHubTokenField();
+    if (!token) {
+      SiteReviewsStore.setGitHubToken('');
+      updateGitHubStatus('Token не сохранён.');
+      const btn = document.getElementById('github-sync-btn');
+      if (btn) btn.textContent = 'Сохранить token';
+      return false;
+    }
+    if (!token.startsWith('ghp_') && !token.startsWith('github_pat_')) {
+      updateGitHubStatus('Это не GitHub token. Нужна строка ghp_...');
+      return false;
+    }
+    SiteReviewsStore.setGitHubToken(token);
+    updateGitHubStatus('✓ GitHub token сохранён в этой вкладке.');
     const btn = document.getElementById('github-sync-btn');
-    if (btn) btn.textContent = 'GitHub подключён ✓';
+    if (btn) btn.textContent = 'Token сохранён ✓';
     return true;
+  }
+
+  function ensureGitHubToken() {
+    if (SiteReviewsStore.getGitHubToken()) return true;
+    const fieldToken = getGitHubTokenField();
+    if (fieldToken) return saveGitHubTokenFromField();
+    updateGitHubStatus('Вставь GitHub token в поле ниже и нажми «Сохранить token».');
+    document.getElementById('github-token')?.focus();
+    return false;
   }
 
   async function login(pin) {
@@ -590,19 +617,14 @@
     if (!btn || !window.SiteReviewsStore) return;
 
     if (SiteReviewsStore.getGitHubToken()) {
-      btn.textContent = 'GitHub подключён ✓';
+      btn.textContent = 'Token сохранён ✓';
+      updateGitHubStatus('✓ GitHub token уже сохранён в этой вкладке.');
     }
 
     btn.addEventListener('click', () => {
-      const current = SiteReviewsStore.getGitHubToken();
-      const token = prompt(
-        'Вставь GitHub token (classic, scope: repo).\nОн хранится только в этой вкладке.\n\nОставь пустым — отключить.',
-        current || ''
-      );
-      if (token === null) return;
-      SiteReviewsStore.setGitHubToken(token.trim());
-      btn.textContent = token.trim() ? 'GitHub подключён ✓' : 'Подключить GitHub';
-      if (token.trim()) alert('GitHub подключён. Теперь «Опубликовать» сразу обновит сайт для всех.');
+      if (saveGitHubTokenFromField()) {
+        alert('Token сохранён. Теперь «Опубликовать» отправит отзыв на сайт для всех.');
+      }
     });
   }
 

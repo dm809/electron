@@ -40,11 +40,11 @@
       <!-- Вход по PIN -->
       <section class="admin__panel" id="admin-login">
         <h2>Вход в модерацию</h2>
-        <p class="admin__hint">PIN-код — без email и WhatsApp. Только ты знаешь код.</p>
+        <p class="admin__hint">PIN — только цифры <strong>472891</strong>. GitHub token сюда НЕ вставлять!</p>
         <form class="admin__form" id="login-form">
           <label class="reviews__field">
-            <span>PIN-код</span>
-            <input type="password" id="admin-pin" required inputmode="numeric" autocomplete="current-password" maxlength="12" placeholder="472891">
+            <span>PIN-код (6 цифр)</span>
+            <input type="password" id="admin-pin" required inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" maxlength="12" placeholder="472891">
           </label>
           <button type="submit" class="btn btn--primary admin__btn">Войти</button>
           <p class="admin__error" id="login-error" hidden></p>
@@ -92,8 +92,13 @@
             </label>
             <button type="submit" class="btn btn--primary admin__btn">Опубликовать на сайте</button>
           </form>
-          <p class="admin__hint admin__hint--small">1 раз нажми «Подключить GitHub» — тогда отзывы сразу на сайте для всех.</p>
-          <button type="button" class="btn btn--sm btn--primary" id="github-sync-btn">Подключить GitHub</button>
+          <p class="admin__hint admin__hint--small">1. Войди PIN <strong>472891</strong> → 2. Внизу вставь GitHub token → «Сохранить token»</p>
+          <label class="reviews__field">
+            <span>GitHub token (начинается с ghp_)</span>
+            <input type="password" id="github-token" autocomplete="off" placeholder="ghp_..." spellcheck="false">
+          </label>
+          <button type="button" class="btn btn--sm btn--primary" id="github-sync-btn">Сохранить token</button>
+          <p class="admin__hint admin__hint--small" id="github-status"></p>
         </div>
       </section>
 
@@ -101,9 +106,9 @@
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/config.js?v=10"></script>
-  <script src="js/site-reviews-store.js?v=10"></script>
-  <script src="js/supabase-client.js?v=10"></script>
-  <script src="js/admin.js?v=10"></script>
+  <script src="js/config.js?v=11"></script>
+  <script src="js/site-reviews-store.js?v=11"></script>
+  <script src="js/supabase-client.js?v=11"></script>
+  <script src="js/admin.js?v=11"></script>
 </body>
 </html>
