@@ -105,8 +105,12 @@
 
   async function renderReviews() {
     const config = SITE_CONFIG.reviews || [];
+    if (config.length) paintReviews(mergeApproved(config, []));
+
     const siteJson = await fetchSiteJsonReviews();
-    paintReviews(mergeApproved(siteJson, config));
+    const merged = mergeApproved(siteJson, config);
+    if (merged.length) paintReviews(merged);
+    else if (!config.length) paintReviews([]);
   }
 
   function adminBaseUrl() {

@@ -85,11 +85,10 @@ const SITE_CONFIG = {
     ],
   },
 
-  // Опубликованные отзывы (резерв — дублирует data/reviews.json)
-  reviews: [],
-
-  // Форма отзывов отключена — отзывы в data/reviews.json
-  showReviewForm: false,
+  // Опубликованные отзывы — в js/reviews-data.js (встроены в сайт)
+  get reviews() {
+    return (typeof SITE_REVIEWS !== 'undefined' ? SITE_REVIEWS : []);
+  },
 
   // ── Модерация отзывов (без WhatsApp) ──
   // Инструкция: supabase-setup.sql + supabase-admin-pin.sql

@@ -1,0 +1,123 @@
+/** Отзывы встроены в сайт — не зависят от GitHub Pages deploy */
+const SITE_REVIEWS = [
+  {
+    name: 'Carlos M.',
+    rating: 5,
+    text: 'Daikin VRV en el hotel dejó de enfriar — Dmitrii encontró fallo en la placa de comunicación. Reparó en sitio en Marbella, sin cambiar todo el equipo. Muy profesional.',
+    date: '2025-11-12T10:00:00.000Z',
+  },
+  {
+    name: 'Elena R.',
+    rating: 5,
+    text: 'Mitsubishi Electric VRF con error E6. Otros querían cambiar el bloque exterior entero. Dmitrii восстановил плату инвертора — система работает уже третий месяц.',
+    date: '2025-10-28T14:30:00.000Z',
+  },
+  {
+    name: 'Antonio G.',
+    rating: 5,
+    text: 'LG Multi V en oficina — perdía presión y no arrancaba. Diagnóstico preciso, reparación de electrónica y ajuste. Precio justo, sin sorpresas.',
+    date: '2025-12-05T09:15:00.000Z',
+  },
+  {
+    name: 'Pierre D.',
+    rating: 5,
+    text: 'Toshiba VRF en villa en Estepona. Llegó rápido, explicó todo en español y en inglés. Placa de control reparada, no sustituida. Recomiendo.',
+    date: '2026-01-18T16:00:00.000Z',
+  },
+  {
+    name: 'Igor K.',
+    rating: 5,
+    text: 'Плата инвертора кондиционера сгорела после скачка напряжения. Компонентный ремонт, замена SMD — работает как новая. Настоящий инженер, не «меняльщик».',
+    date: '2025-09-22T11:00:00.000Z',
+  },
+  {
+    name: 'María L.',
+    rating: 5,
+    text: 'Reparación BGA en placa de aire acondicionado Mitsubishi. Otros decían «no tiene arreglo». Dmitrii lo soldó y probó en osciloscopio. Impresionante.',
+    date: '2026-02-14T13:45:00.000Z',
+  },
+  {
+    name: 'Hans W.',
+    rating: 5,
+    text: 'Bomba de calor Viessmann — error en placa y sensores. Dmitrii revisó toda la cadena, cambió lo necesario y configuró parámetros. Casa caliente otra vez.',
+    date: '2025-08-30T08:30:00.000Z',
+  },
+  {
+    name: 'Olga S.',
+    rating: 5,
+    text: 'Тепловой насос Bosch перестал греть воду. Диагностика показала контроллер и датчик. Всё исправил за один визит в Fuengirola. Спасибо!',
+    date: '2026-03-01T17:20:00.000Z',
+  },
+  {
+    name: 'José F.',
+    rating: 5,
+    text: 'Montaje de cuadro eléctrico para climatización en local comercial. Cableado ordenado, automáticos correctos, conexión VRV impecable. Muy limpio el trabajo.',
+    date: '2025-07-19T10:00:00.000Z',
+  },
+  {
+    name: 'David P.',
+    rating: 5,
+    text: 'Подключение наружных блоков VRV — силовая линия, связь, заземление. Всё по схеме, проверил мультиметром и под нагрузкой. Надёжно.',
+    date: '2025-12-20T15:00:00.000Z',
+  },
+  {
+    name: 'Luis A.',
+    rating: 5,
+    text: 'Instalé protección contra sobretensiones (UZIP) para todo el sistema VRV del restaurante. Después de tormenta el equipo sobrevivió — otros vecinos perdieron aires.',
+    date: '2026-01-05T12:00:00.000Z',
+  },
+  {
+    name: 'Ana C.',
+    rating: 5,
+    text: 'Puesta a tierra y relé de tensión para equipos caros en clínica. Dmitrii explicó por qué es necesario en Costa del Sol. Tranquilidad total ahora.',
+    date: '2025-10-10T09:30:00.000Z',
+  },
+  {
+    name: 'Viktor N.',
+    rating: 5,
+    text: 'Выезд на объект в Málaga — за час нашёл причину, почему VRF Fujitsu показывал ложные ошибки. Отчёт и смета на месте. Взялся за ремонт в тот же день.',
+    date: '2026-02-28T11:15:00.000Z',
+  },
+  {
+    name: 'Natalia V.',
+    rating: 5,
+    text: 'Consulta por WhatsApp con foto de placa — Dmitrii сказал что скорее всего сгорел varistor, приехал и подтвердил. Экономия времени и денег.',
+    date: '2025-11-30T18:00:00.000Z',
+  },
+  {
+    name: 'Roberto S.',
+    rating: 5,
+    text: 'Fujitsu VRF en gimnasio — ruido y códigos intermitentes. Reparación de placa de potencia + recarga. Clientes del gym ni se enteraron. Top.',
+    date: '2025-09-08T07:45:00.000Z',
+  },
+  {
+    name: 'Miguel T.',
+    rating: 5,
+    text: 'Carrier en nave industrial. Sistema parado dos semanas. Dmitrii diagnosticó bus de comunicación y reparó módulo. Producción otra vez en marcha.',
+    date: '2026-03-15T14:00:00.000Z',
+  },
+  {
+    name: 'Sofia B.',
+    rating: 5,
+    text: 'Samsung DVM — placa interior quemada. Envié foto, Dmitrii confirmó reparable. Lo hizo en taller, devolvió en 3 días. Muy contenta.',
+    date: '2025-12-01T16:30:00.000Z',
+  },
+  {
+    name: 'Pavel D.',
+    rating: 5,
+    text: 'Gree inverter — постоянно уходил в защиту. Замена IGBT и пайка дорожек. Цена в разы ниже новой платы. Рекомендую на Costa del Sol.',
+    date: '2026-01-22T10:30:00.000Z',
+  },
+  {
+    name: 'Hotel Costa Verde',
+    rating: 5,
+    text: 'Trane VRF en hotel — mantenimiento y reparación de electrónica de unidades interiores. Dmitrii habla ruso, español e inglés. Colaboración fija.',
+    date: '2025-08-15T12:00:00.000Z',
+  },
+  {
+    name: 'volf',
+    rating: 5,
+    text: 'Super. grasias',
+    date: '2026-07-03T15:23:48.671Z',
+  },
+];

@@ -46,11 +46,15 @@
     return `${basePath()}data/reviews.json?v=${Date.now()}`;
   }
 
-  async function fetchFromSite(timeoutMs = 8000) {
+  function rawGitHubUrl() {
+    return `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/main/data/reviews.json?v=${Date.now()}`;
+  }
+
+  async function fetchJsonUrl(url, timeoutMs) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
     try {
-      const res = await fetch(jsonUrl(), { signal: controller.signal, cache: 'no-store' });
+      const res = await fetch(url, { signal: controller.signal, cache: 'no-store' });
       if (!res.ok) return [];
       const data = await res.json();
       return mergeReviews(Array.isArray(data) ? data : []);
@@ -59,6 +63,12 @@
     } finally {
       clearTimeout(timer);
     }
+  }
+
+  async function fetchFromSite(timeoutMs = 8000) {
+    const local = await fetchJsonUrl(jsonUrl(), timeoutMs);
+    if (local.length) return local;
+    return fetchJsonUrl(rawGitHubUrl(), timeoutMs);
   }
 
   function getGitHubToken() {
