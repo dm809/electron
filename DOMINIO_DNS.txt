@@ -1,0 +1,59 @@
+ELEKTRON — DNS для dmitrii-elektron.es (DonDominio → GitHub Pages)
+====================================================================
+
+Репозиторий: https://github.com/dm809/electron
+GitHub Pages: https://dm809.github.io/electron/
+Сайт после настройки: https://dmitrii-elektron.es
+
+ШАГ 1 — DonDominio: зона DNS
+----------------------------
+Панель DonDominio → Мои домены → dmitrii-elektron.es → DNS / Zona DNS
+
+УДАЛИ (если есть) старые записи типа A или CNAME на @ и www,
+которые ведут на парковку DonDominio — иначе GitHub не подключится.
+
+ДОБАВЬ записи:
+
+| Tipo  | Host / Nombre | Valor / Destino        | TTL    |
+|-------|---------------|------------------------|--------|
+| A     | @             | 185.199.108.153        | 3600   |
+| A     | @             | 185.199.109.153        | 3600   |
+| A     | @             | 185.199.110.153        | 3600   |
+| A     | @             | 185.199.111.153        | 3600   |
+| CNAME | www           | dm809.github.io        | 3600   |
+
+Примечания для DonDominio:
+- Host «@» = корень домена (dmitrii-elektron.es без www)
+- Для www: имя «www», тип CNAME, значение «dm809.github.io» (без https://)
+- Нужны все 4 записи A — это нормально, GitHub так требует
+- TTL 3600 (1 час) или «Automático» — подойдёт
+
+Опционально (IPv6, не обязательно):
+| AAAA | @ | 2606:50c0:8000::153 |
+| AAAA | @ | 2606:50c0:8001::153 |
+| AAAA | @ | 2606:50c0:8002::153 |
+| AAAA | @ | 2606:50c0:8003::153 |
+
+ШАГ 2 — GitHub: Custom domain
+-----------------------------
+1. https://github.com/dm809/electron/settings/pages
+2. Custom domain → введи: dmitrii-elektron.es → Save
+3. Подожди проверку DNS (может занять до 24 ч, обычно 15–60 мин)
+4. Когда появится зелёная галочка → включи «Enforce HTTPS»
+
+В репозитории уже есть файл CNAME с текстом: dmitrii-elektron.es
+
+ШАГ 3 — Проверка
+----------------
+Открой в браузере:
+  https://dmitrii-elektron.es
+  https://www.dmitrii-elektron.es  (должен перенаправить на без www)
+
+Старый адрес github.io тоже будет работать:
+  https://dm809.github.io/electron/
+
+Проблемы?
+---------
+- «Domain's DNS record could not be retrieved» → подожди или проверь 4 записи A
+- Сайт не открывается → Ctrl+F5, подожди DNS до 24 ч
+- Сертификат HTTPS → включи Enforce HTTPS после зелёной галочки DNS

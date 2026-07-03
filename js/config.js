@@ -21,7 +21,17 @@ const SITE_CONFIG = {
   youtubeUrl: 'https://youtube.com/@electronica-u1f',
 
   // GitHub Pages: https://dm809.github.io/electron/
-  basePath: '/electron/',
+  // Свой домен: https://dmitrii-elektron.es/
+  customDomain: 'dmitrii-elektron.es',
+  githubPagesPath: '/electron/',
+  get basePath() {
+    if (typeof location === 'undefined') return this.githubPagesPath;
+    if (location.protocol === 'file:') return this.githubPagesPath;
+    const custom = (this.customDomain || '').toLowerCase();
+    const host = location.hostname.toLowerCase();
+    if (custom && (host === custom || host === `www.${custom}`)) return '/';
+    return this.githubPagesPath;
+  },
 
   city: 'Costa del Sol',
   region: 'Andalucía, España',
