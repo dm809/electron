@@ -961,6 +961,11 @@ a.partner-card:hover .partner-card__logo img {
   align-items: start;
 }
 
+.reviews__layout--static {
+  grid-template-columns: 1fr;
+  max-width: 720px;
+}
+
 .reviews__list {
   display: flex;
   flex-direction: column;
@@ -1078,6 +1083,9 @@ a.partner-card:hover .partner-card__logo img {
   font-size: 0.95rem;
   margin-bottom: 12px;
   white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  hyphens: auto;
 }
 
 .review-card__date {
@@ -1545,6 +1553,37 @@ a.partner-card:hover .partner-card__logo img {
 
   body {
     padding-bottom: 70px;
+  }
+
+  .hero__title,
+  .hero__subtitle,
+  h2, h3,
+  .service-card h3,
+  .service-card > p,
+  .service-card ul li,
+  .review-card__text,
+  .review-card__author,
+  .faq__item p,
+  .faq__item summary,
+  .brands-grid span,
+  .section-tag,
+  .btn {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    hyphens: auto;
+  }
+
+  .container,
+  .hero__inner,
+  .services__grid,
+  .reviews__layout,
+  .service-card {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .hero__subtitle {
+    max-width: 100%;
   }
 }
 

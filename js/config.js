@@ -85,8 +85,11 @@ const SITE_CONFIG = {
     ],
   },
 
-  // Опубликованные отзывы (резерв, если Supabase не настроен)
+  // Опубликованные отзывы (резерв — дублирует data/reviews.json)
   reviews: [],
+
+  // Форма отзывов отключена — отзывы в data/reviews.json
+  showReviewForm: false,
 
   // ── Модерация отзывов (без WhatsApp) ──
   // Инструкция: supabase-setup.sql + supabase-admin-pin.sql
