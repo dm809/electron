@@ -243,38 +243,53 @@
     el.textContent = JSON.stringify(schema);
   }
 
+  function gtagReportConversion(url) {
+    if (!SITE_CONFIG.googleAdsConversion || !window.gtag) {
+      if (url) window.location.href = url;
+      return false;
+    }
+    let done = false;
+    const go = () => {
+      if (done) return;
+      done = true;
+      if (url) window.location.href = url;
+    };
+    window.gtag('event', 'conversion', {
+      send_to: SITE_CONFIG.googleAdsConversion,
+      event_callback: go,
+    });
+    setTimeout(go, 1000);
+    return false;
+  }
+
+  window.gtag_report_conversion = gtagReportConversion;
+
   function initGoogleAds() {
-    const { googleAdsId, googleAdsConversion, googleAnalyticsId } = SITE_CONFIG;
-    const tagId = googleAdsId || googleAnalyticsId;
-    if (!tagId) return;
+    if (!SITE_CONFIG.googleAdsConversion) return;
 
-    function bootGtag() {
-      window.dataLayer = window.dataLayer || [];
-      function gtag() { dataLayer.push(arguments); }
-      window.gtag = gtag;
-      gtag('js', new Date());
-      if (googleAnalyticsId) gtag('config', googleAnalyticsId);
-      if (googleAdsId) gtag('config', googleAdsId);
-
+    function bindConversionClicks() {
       document.querySelectorAll('.gads-conversion').forEach((el) => {
-        el.addEventListener('click', () => {
-          if (googleAdsConversion && window.gtag) {
-            gtag('event', 'conversion', { send_to: googleAdsConversion });
-          }
+        if (el.dataset.gadsBound === '1') return;
+        el.dataset.gadsBound = '1';
+        el.addEventListener('click', (e) => {
+          const url = el.href;
+          if (!url || url === '#' || url.endsWith('#')) return;
+          e.preventDefault();
+          gtagReportConversion(url);
         });
       });
     }
 
-    if (document.querySelector(`script[src*="googletagmanager.com/gtag/js?id=${tagId}"]`)) {
-      bootGtag();
-      return;
+    if (window.gtag) bindConversionClicks();
+    else {
+      const wait = setInterval(() => {
+        if (window.gtag) {
+          clearInterval(wait);
+          bindConversionClicks();
+        }
+      }, 100);
+      setTimeout(() => clearInterval(wait), 5000);
     }
-
-    const script = document.createElement('script');
-    script.async = true;
-    script.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(tagId)}`;
-    script.onload = bootGtag;
-    document.head.appendChild(script);
   }
 
   function initLangSwitch() {

@@ -42,7 +42,7 @@ const SITE_CONFIG = {
   // googleAdsConversion: 'AW-XXXXXXXXX/AbCdEfGh'
   // googleAnalyticsId: 'G-XXXXXXXXXX'  (opcional)
   googleAdsId: 'AW-18280309759',
-  googleAdsConversion: '', // добавим метку AW-18280309759/xxxxx когда Google даст
+  googleAdsConversion: 'AW-18280309759/cen5CI-HyMocEP_H3YxE',
   googleAnalyticsId: '',
 
   speakLanguages: ['ru', 'es', 'en', 'uk', 'de'],
