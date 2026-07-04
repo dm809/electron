@@ -80,6 +80,7 @@
     renderSpeakTags();
     renderBrands();
     renderPartners();
+    renderIntroVideo();
     renderGallery();
     updateSchema();
     if (window.ReviewsModule) {
@@ -155,6 +156,24 @@
       }
       return `<div class="partner-card">${inner}</div>`;
     }).join('');
+  }
+
+  function renderIntroVideo() {
+    const section = document.getElementById('intro');
+    const player = document.getElementById('intro-video-player');
+    const cfg = SITE_CONFIG.introVideo;
+    if (!section || !player || !cfg?.enabled || !cfg.youtubeId) {
+      if (section) section.hidden = true;
+      return;
+    }
+
+    section.hidden = false;
+    const title = t('introTitle');
+    player.innerHTML = `
+      <iframe src="https://www.youtube-nocookie.com/embed/${cfg.youtubeId}?rel=0&modestbranding=1"
+              title="${title}" loading="lazy"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowfullscreen></iframe>`;
   }
 
   function renderGallery() {

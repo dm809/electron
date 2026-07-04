@@ -20,6 +20,13 @@ const SITE_CONFIG = {
 
   youtubeUrl: 'https://youtube.com/@electronica-u1f',
 
+  // Видео-вступление (отдельный блок, не галерея)
+  introVideo: {
+    enabled: true,
+    youtubeId: 'pLZmAyYg9fc',
+    lang: 'es',
+  },
+
   // GitHub Pages: https://dm809.github.io/electron/
   // Свой домен: https://dmitrii-elektron.es/
   customDomain: 'dmitrii-elektron.es',
