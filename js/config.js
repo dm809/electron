@@ -35,9 +35,14 @@ const SITE_CONFIG = {
 
   city: 'Costa del Sol',
   region: 'Andalucía, España',
+  siteUrl: 'https://dmitrii-elektron.es/',
 
-  googleAdsId: '',
-  googleAdsConversion: '',
+  // Google Ads — вставь ID из ads.google.com → Herramientas → Conversiones
+  // googleAdsId: 'AW-XXXXXXXXX'
+  // googleAdsConversion: 'AW-XXXXXXXXX/AbCdEfGh'
+  // googleAnalyticsId: 'G-XXXXXXXXXX'  (opcional)
+  googleAdsId: 'AW-18280309759',
+  googleAdsConversion: '', // добавим метку AW-18280309759/xxxxx когда Google даст
   googleAnalyticsId: '',
 
   speakLanguages: ['ru', 'es', 'en', 'uk', 'de'],
@@ -69,19 +74,17 @@ const SITE_CONFIG = {
 
   photos: {
     hero: 'images/logo.jpg',
+    // Галерея: фото, YouTube и MP4. Примеры ниже — раскомментируй и добавь свои.
     gallery: [
-      { src: 'images/gallery-1.jpg', altKey: 'gal1' },
-      { src: 'images/gallery-2.jpg', altKey: 'gal2' },
-      { src: 'images/gallery-3.jpg', altKey: 'gal3' },
-      { src: 'images/gallery-4.jpg', altKey: 'gal4' },
-      { src: 'images/gallery-5.jpg', altKey: 'gal5' },
-      { src: 'images/gallery-6.jpg', altKey: 'gal6' },
-      { src: 'images/gallery-7.jpg', altKey: 'gal7' },
-      { src: 'images/gallery-8.jpg', altKey: 'gal8' },
-      { src: 'images/gallery-9.jpg', altKey: 'gal9' },
-      { src: 'images/gallery-10.jpg', altKey: 'gal10' },
-      { src: 'images/gallery-11.jpg', altKey: 'gal11' },
-      { src: 'images/gallery-12.jpg', altKey: 'gal12' },
+      { type: 'image', src: 'images/gallery-8.jpg', altKey: 'gal8' },
+      { type: 'image', src: 'images/gallery-9.jpg', altKey: 'gal9' },
+      { type: 'image', src: 'images/gallery-10.jpg', altKey: 'gal10' },
+      { type: 'image', src: 'images/gallery-11.jpg', altKey: 'gal11' },
+      { type: 'image', src: 'images/gallery-12.jpg', altKey: 'gal12' },
+      // YouTube — videoId из ссылки watch?v=XXXX:
+      // { type: 'youtube', videoId: 'XXXXXXXX', altKey: 'galVideo1' },
+      // Свой ролик — положи MP4 в images/videos/:
+      // { type: 'video', src: 'images/videos/repair-1.mp4', altKey: 'galVideo2' },
     ],
   },
 

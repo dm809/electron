@@ -885,6 +885,20 @@ a.partner-card:hover .partner-card__logo img {
   object-fit: cover;
 }
 
+.gallery__item--video {
+  aspect-ratio: 16 / 9;
+}
+
+.gallery__item iframe,
+.gallery__item video {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+  object-fit: cover;
+  background: #000;
+}
+
 .gallery__item .gallery__placeholder {
   display: none;
 }

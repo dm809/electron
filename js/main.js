@@ -161,9 +161,29 @@
     const grid = document.getElementById('gallery-grid');
     if (!grid) return;
 
-    grid.innerHTML = SITE_CONFIG.photos.gallery.map((photo) => {
-      const alt = photo.altKey ? t(photo.altKey) : (photo.alt || '');
-      const src = asset(photo.src);
+    grid.innerHTML = SITE_CONFIG.photos.gallery.map((item) => {
+      const alt = item.altKey ? t(item.altKey) : (item.alt || '');
+      const type = item.type || (item.videoId ? 'youtube' : item.src?.includes('.mp4') ? 'video' : 'image');
+
+      if (type === 'youtube' && item.videoId) {
+        return `
+      <div class="gallery__item gallery__item--video">
+        <iframe src="https://www.youtube-nocookie.com/embed/${item.videoId}?rel=0"
+                title="${alt}" loading="lazy"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen></iframe>
+      </div>`;
+      }
+
+      if (type === 'video') {
+        const src = asset(item.src);
+        return `
+      <div class="gallery__item gallery__item--video">
+        <video src="${src}" controls playsinline preload="metadata" aria-label="${alt}"></video>
+      </div>`;
+      }
+
+      const src = asset(item.src);
       return `
       <div class="gallery__item">
         <img src="${src}" alt="${alt}" loading="lazy"
@@ -225,23 +245,36 @@
 
   function initGoogleAds() {
     const { googleAdsId, googleAdsConversion, googleAnalyticsId } = SITE_CONFIG;
-    if (!googleAdsId && !googleAnalyticsId) return;
+    const tagId = googleAdsId || googleAnalyticsId;
+    if (!tagId) return;
 
-    window.dataLayer = window.dataLayer || [];
-    function gtag() { dataLayer.push(arguments); }
-    window.gtag = gtag;
-    gtag('js', new Date());
+    function bootGtag() {
+      window.dataLayer = window.dataLayer || [];
+      function gtag() { dataLayer.push(arguments); }
+      window.gtag = gtag;
+      gtag('js', new Date());
+      if (googleAnalyticsId) gtag('config', googleAnalyticsId);
+      if (googleAdsId) gtag('config', googleAdsId);
 
-    if (googleAnalyticsId) gtag('config', googleAnalyticsId);
-    if (googleAdsId) gtag('config', googleAdsId);
-
-    document.querySelectorAll('.gads-conversion').forEach((el) => {
-      el.addEventListener('click', () => {
-        if (googleAdsConversion && window.gtag) {
-          gtag('event', 'conversion', { send_to: googleAdsConversion });
-        }
+      document.querySelectorAll('.gads-conversion').forEach((el) => {
+        el.addEventListener('click', () => {
+          if (googleAdsConversion && window.gtag) {
+            gtag('event', 'conversion', { send_to: googleAdsConversion });
+          }
+        });
       });
-    });
+    }
+
+    if (document.querySelector(`script[src*="googletagmanager.com/gtag/js?id=${tagId}"]`)) {
+      bootGtag();
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.async = true;
+    script.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(tagId)}`;
+    script.onload = bootGtag;
+    document.head.appendChild(script);
   }
 
   function initLangSwitch() {
