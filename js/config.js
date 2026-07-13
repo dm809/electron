@@ -23,7 +23,8 @@ const SITE_CONFIG = {
   // Видео-вступление (отдельный блок, не галерея)
   introVideo: {
     enabled: true,
-    youtubeId: 'pLZmAyYg9fc',
+    youtubeId: '0zbjmG7aUn8',
+  
     lang: 'es',
   },
 
