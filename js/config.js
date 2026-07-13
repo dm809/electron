@@ -88,7 +88,9 @@ const SITE_CONFIG = {
       { type: 'image', src: 'images/gallery-9.jpg', altKey: 'gal9' },
       { type: 'image', src: 'images/gallery-10.jpg', altKey: 'gal10' },
       { type: 'image', src: 'images/gallery-11.jpg', altKey: 'gal11' },
-      { type: 'image', src: 'images/gallery-12.jpg', altKey: 'gal12' },
+      { type: 'image', src: 'images/gallery-12.jpg', altKey: 'gal12' },                                               
+      { type: 'image', src: 'images/gallery-13.png' },
+      { type: 'image', src: 'images/gallery-14.png' },
       // YouTube — videoId из ссылки watch?v=XXXX:
       // { type: 'youtube', videoId: 'XXXXXXXX', altKey: 'galVideo1' },
       // Свой ролик — положи MP4 в images/videos/:
