@@ -15,8 +15,8 @@ const SITE_CONFIG = {
   whatsappUrl: 'https://wa.me/message/QRZS65C6P4KGM1',
   whatsappPhone: '34643292197',
 
-  instagramUrl: 'https://www.instagram.com/dmitrii_electron/',
-  instagramUsername: 'dmitrii_electron',
+  instagramUrl: 'https://www.instagram.com/dmitrii_elektron?igsh=cTJldzIzb3F0dTBo',
+  instagramUsername: 'dmitrii_elektron',
 
   youtubeUrl: 'https://www.youtube.com/@electronica-u1f',
 
