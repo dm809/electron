@@ -1,5 +1,83 @@
 [
   {
+    "name": "Mitchell",
+    "rating": 5,
+    "text": "Mitsubishi heat pump repair — done to a very high standard. Professional team.",
+    "date": "2026-08-01T14:20:00.000Z"
+  },
+  {
+    "name": "Вячеслав",
+    "rating": 5,
+    "text": "Мульти-сплит Daikin отказывался работать. Ребята провели диагностику и ремонт — работает отлично.",
+    "date": "2026-07-28T11:45:00.000Z"
+  },
+  {
+    "name": "Jose Antonio",
+    "rating": 5,
+    "text": "Mitsubishi de dos ventiladores daba error U2. Dmitrii y su equipo resolvieron el problema.",
+    "date": "2026-07-25T16:30:00.000Z"
+  },
+  {
+    "name": "Roméo",
+    "rating": 5,
+    "text": "Multi-split Haier — travail de très haut niveau. Je recommande vivement.",
+    "date": "2026-07-22T10:15:00.000Z"
+  },
+  {
+    "name": "James",
+    "rating": 5,
+    "text": "VRV system back online within a day. Honest and skilled engineer.",
+    "date": "2026-07-20T09:00:00.000Z"
+  },
+  {
+    "name": "Sarah",
+    "rating": 5,
+    "text": "Excellent PCB repair on our Daikin unit. Works like new again.",
+    "date": "2026-07-18T15:40:00.000Z"
+  },
+  {
+    "name": "Hans",
+    "rating": 5,
+    "text": "Sehr professionell. Wärmepumpe repariert — alles läuft wieder einwandfrei.",
+    "date": "2026-07-15T12:00:00.000Z"
+  },
+  {
+    "name": "Thomas",
+    "rating": 5,
+    "text": "Quick diagnosis, fair price. Highly recommended on Costa del Sol.",
+    "date": "2026-07-12T18:20:00.000Z"
+  },
+  {
+    "name": "Emma",
+    "rating": 5,
+    "text": "Outstanding service. Inverter board repaired perfectly.",
+    "date": "2026-07-10T13:55:00.000Z"
+  },
+  {
+    "name": "Peter",
+    "rating": 5,
+    "text": "Brilliant work on our multi-split system. Fast, reliable, professional.",
+    "date": "2026-07-08T17:10:00.000Z"
+  },
+  {
+    "name": "Ekaterina M",
+    "rating": 5,
+    "text": "В новостройке не функционировал кондиционер. Не дождавшись техника от застройщика вызвала Дмитрия который отреагировал моментально, нашел неисправность, заказал новую плату и оперативно установил её. Благодарю за отличную работу!",
+    "date": "2026-07-07T12:32:12.000Z"
+  },
+  {
+    "name": "Наталья",
+    "rating": 5,
+    "text": "Очень советую, серьёзный и ответственный молодой человек.",
+    "date": "2026-07-05T23:56:24.000Z"
+  },
+  {
+    "name": "SVITLANA",
+    "rating": 5,
+    "text": "Дмитрий отличный мастер! Быстро и качественно. Рекомендую!",
+    "date": "2026-07-04T22:30:36.000Z"
+  },
+  {
     "name": "Alejandro",
     "rating": 5,
     "text": "Muchas gracias por tu ayuda, ahora mi aire funciona bien!",
@@ -12,16 +90,10 @@
     "date": "2026-07-03T17:32:43.000Z"
   },
   {
-    "name": "Igor K.",
+    "name": "volf",
     "rating": 5,
-    "text": "Плата инвертора сгорела после скачка напряжения. Компонентный ремонт, замена SMD — работает как новая. Настоящий инженер, не «меняльщик».",
-    "date": "2025-09-22T11:00:00.000Z"
-  },
-  {
-    "name": "José F.",
-    "rating": 5,
-    "text": "Montaje de cuadro eléctrico para climatización en local comercial. Cableado ordenado, automáticos correctos, conexión impecable. Muy limpio el trabajo.",
-    "date": "2025-07-19T10:00:00.000Z"
+    "text": "Super. grasias",
+    "date": "2026-07-03T15:23:48.671Z"
   },
   {
     "name": "María L.",
@@ -36,27 +108,15 @@
     "date": "2025-12-20T15:00:00.000Z"
   },
   {
-    "name": "volf",
+    "name": "Igor K.",
     "rating": 5,
-    "text": "Super. grasias",
-    "date": "2026-07-03T15:23:48.671Z"
+    "text": "Плата инвертора сгорела после скачка напряжения. Компонентный ремонт, замена SMD — работает как новая. Настоящий инженер, не «меняльщик».",
+    "date": "2025-09-22T11:00:00.000Z"
   },
   {
-    "name": "Ekaterina M",
+    "name": "José F.",
     "rating": 5,
-    "text": "В новостройке не функционировал кондиционер. Не дождавшись техника от застройщика вызвала Дмитрия который отреагировал моментально, нашел неисправность, заказал новую плату и оперативно установил её. Благодарю за отличную работу!",
-    "date": "2026-07-07T12:32:12.000Z"
-  },
-  {
-    "name": "SVITLANA",
-    "rating": 5,
-    "text": "Дмитрий отличный мастер! Быстро и качественно. Рекомендую!",
-    "date": "2026-07-04T22:30:36.000Z"
-  },
-  {
-    "name": "Наталья",
-    "rating": 5,
-    "text": "Очень советую, серьёзный и ответственный молодой человек.",
-    "date": "2026-07-05T23:56:24.000Z"
+    "text": "Montaje de cuadro eléctrico para climatización en local comercial. Cableado ordenado, automáticos correctos, conexión impecable. Muy limpio el trabajo.",
+    "date": "2025-07-19T10:00:00.000Z"
   }
 ]

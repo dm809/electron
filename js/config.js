@@ -24,7 +24,6 @@ const SITE_CONFIG = {
   introVideo: {
     enabled: true,
     youtubeId: '0zbjmG7aUn8',
-  
     lang: 'es',
   },
 
@@ -84,13 +83,13 @@ const SITE_CONFIG = {
     hero: 'images/logo.jpg',
     // Галерея: фото, YouTube и MP4. Примеры ниже — раскомментируй и добавь свои.
     gallery: [
-      { type: 'image', src: 'images/gallery-8.jpg', altKey: 'gal8' },
-      { type: 'image', src: 'images/gallery-9.jpg', altKey: 'gal9' },
-      { type: 'image', src: 'images/gallery-10.jpg', altKey: 'gal10' },
-      { type: 'image', src: 'images/gallery-11.jpg', altKey: 'gal11' },
-      { type: 'image', src: 'images/gallery-12.jpg', altKey: 'gal12' },                                               
-      { type: 'image', src: 'images/gallery-13.png' },
-      { type: 'image', src: 'images/gallery-14.png' },
+      { type: 'image', src: 'images/gallery-work-1.jpg', altKey: 'gal8' },
+      { type: 'image', src: 'images/gallery-work-2.jpg', altKey: 'gal9' },
+      { type: 'image', src: 'images/gallery-work-3.jpg', altKey: 'gal10' },
+      { type: 'image', src: 'images/gallery-work-4.jpg', altKey: 'gal11' },
+      { type: 'image', src: 'images/gallery-work-5.jpg', altKey: 'gal12' },
+      { type: 'image', src: 'images/gallery-13.png', altKey: 'gal13' },
+      { type: 'image', src: 'images/gallery-14.png', altKey: 'gal14' },
       // YouTube — videoId из ссылки watch?v=XXXX:
       // { type: 'youtube', videoId: 'XXXXXXXX', altKey: 'galVideo1' },
       // Свой ролик — положи MP4 в images/videos/:
@@ -107,7 +106,7 @@ const SITE_CONFIG = {
   // Инструкция: supabase-setup.sql + supabase-admin-pin.sql
   // Если «Failed to fetch» — зайди в supabase.com и нажми Restore project
   supabase: {
-    url: 'https://cxqiceminxlsigoibhlh.supabase.co',
+    url: 'https://cxqiceminlsigoiubhlh.supabase.co',
     anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN4cWljZW1pbmxzaWdvaXViaGxoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI5Mjg5NDQsImV4cCI6MjA5ODUwNDk0NH0.W4S4EWhjWfQWHzAKSDb0ryZY2TUJML37WZccKvnUz5w',
   },
 
