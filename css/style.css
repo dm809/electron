@@ -1532,7 +1532,20 @@ a.partner-card:hover .partner-card__logo img {
 }
 
 @media (max-width: 640px) {
-  .nav, .header__actions {
+  .nav {
+    display: none;
+  }
+
+  /* Переключатель языка в шапке — как на десктопе */
+  .header__actions {
+    display: flex;
+  }
+
+  .header__cta {
+    display: none;
+  }
+
+  .lang-switch--mobile {
     display: none;
   }
 

@@ -18,12 +18,12 @@ const SITE_CONFIG = {
   instagramUrl: 'https://www.instagram.com/dmitrii_elektron?igsh=cTJldzIzb3F0dTBo',
   instagramUsername: 'dmitrii_elektron',
 
-  youtubeUrl: 'https://www.youtube.com/@electronica-u1f',
+  youtubeUrl: 'https://www.youtube.com/@elektron_dmitrii',
 
   // Видео-вступление (отдельный блок, не галерея)
   introVideo: {
     enabled: true,
-    youtubeId: '0zbjmG7aUn8',
+    youtubeId: 'DHUvzaPB1y4',
     lang: 'es',
   },
 
