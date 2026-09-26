@@ -620,9 +620,23 @@ section {
   margin: 0 auto;
 }
 
-/* Services */
+/* Services — светлый блок */
 .services {
   padding: 100px 0;
+  background: #ffffff;
+  color: #111827;
+}
+
+.services .section-tag {
+  color: #006CB7;
+}
+
+.services .section-head h2 {
+  color: #111827;
+}
+
+.services .section-head p {
+  color: #374151;
 }
 
 .services__grid {
@@ -632,28 +646,33 @@ section {
 }
 
 .service-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
   border-radius: var(--radius);
   padding: 28px;
-  transition: transform 0.3s, border-color 0.3s, background 0.3s;
+  transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
 }
 
 .service-card:hover {
   transform: translateY(-4px);
-  border-color: rgba(6, 182, 212, 0.3);
-  background: var(--bg-card-hover);
+  border-color: #cbd5e1;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.08);
 }
 
 .service-card__icon {
   width: 48px;
   height: 48px;
-  background: rgba(6, 182, 212, 0.1);
+  background: rgba(0, 108, 183, 0.1);
   border-radius: 12px;
   display: grid;
   place-items: center;
-  color: var(--accent);
+  color: #006CB7;
   margin-bottom: 18px;
+}
+
+.service-card:nth-child(even) .service-card__icon {
+  background: rgba(0, 166, 81, 0.1);
+  color: #00A651;
 }
 
 .service-card__icon svg {
@@ -665,10 +684,15 @@ section {
   font-size: 1.1rem;
   font-weight: 700;
   margin-bottom: 10px;
+  color: #006CB7;
+}
+
+.service-card:nth-child(even) h3 {
+  color: #00A651;
 }
 
 .service-card > p {
-  color: var(--text-muted);
+  color: #1f2937;
   font-size: 0.9rem;
   margin-bottom: 16px;
 }
@@ -682,7 +706,7 @@ section {
 
 .service-card ul li {
   font-size: 0.82rem;
-  color: var(--text-muted);
+  color: #374151;
   padding-left: 16px;
   position: relative;
 }
@@ -694,8 +718,12 @@ section {
   top: 8px;
   width: 5px;
   height: 5px;
-  background: var(--accent);
+  background: #006CB7;
   border-radius: 50%;
+}
+
+.service-card:nth-child(even) ul li::before {
+  background: #00A651;
 }
 
 /* About */
@@ -759,18 +787,21 @@ section {
 
 .brands-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
   margin-top: 16px;
 }
 
 .brands-grid .brand-tag {
-  padding: 16px 20px;
+  padding: 18px 16px;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   text-align: center;
-  font-weight: 700;
-  font-size: 0.9rem;
+  line-height: 1.25;
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: transform 0.2s, box-shadow 0.2s, filter 0.2s;
 }
 
