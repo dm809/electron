@@ -879,16 +879,28 @@ a.partner-card:hover .partner-card__logo img {
 }
 
 .intro-video__layout {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 32px;
-  align-items: stretch;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+.intro-video__head {
+  width: 100%;
+  text-align: center;
+}
+
+.intro-video__head .intro-video__desc {
+  margin-bottom: 0;
 }
 
 .intro-video__media {
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 100%;
 }
 
 /* Внешняя «рамка» — размытый фон + видео внутри */
@@ -943,22 +955,9 @@ a.partner-card:hover .partner-card__logo img {
   display: block;
 }
 
-.intro-video__side {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 12px;
-}
-
-.intro-video__side h2 {
-  font-size: clamp(1.5rem, 3vw, 2rem);
-  font-weight: 800;
-  line-height: 1.2;
-}
-
 .intro-video__desc {
   color: var(--text-muted);
-  margin-bottom: 8px;
+  margin-bottom: 0;
 }
 
 /* Синяя панель с ключевыми пунктами */
@@ -966,10 +965,10 @@ a.partner-card:hover .partner-card__logo img {
   display: flex;
   flex-direction: column;
   gap: 0;
+  width: 100%;
   background: #102ea1;
   border-radius: var(--radius);
   padding: 8px 0;
-  margin-top: 8px;
   box-shadow: 0 16px 40px rgba(16, 46, 161, 0.35);
 }
 
@@ -1612,11 +1611,6 @@ a.partner-card:hover .partner-card__logo img {
 
 /* Responsive */
 @media (max-width: 960px) {
-  .intro-video__layout {
-    grid-template-columns: 1fr;
-    gap: 28px;
-  }
-
   .intro-video__shell,
   .intro-video__shell--shorts {
     max-width: 320px;
