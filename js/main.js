@@ -64,7 +64,7 @@
 
     const heroTitle = document.getElementById('hero-title');
     if (heroTitle) {
-      const highlight = `<span class="gradient-text">${t('heroHighlight')}</span>`;
+      const highlight = `<span class="mark-highlight">${t('heroHighlight')}</span>`;
       heroTitle.innerHTML = t('heroTitle').replace('{highlight}', highlight);
     }
 
@@ -160,6 +160,8 @@
 
   function renderIntroVideo() {
     const section = document.getElementById('intro');
+    const shell = document.getElementById('intro-video-shell');
+    const bg = document.getElementById('intro-video-bg');
     const player = document.getElementById('intro-video-player');
     const cfg = SITE_CONFIG.introVideo;
     if (!section || !player || !cfg?.enabled || !cfg.youtubeId) {
@@ -169,11 +171,30 @@
 
     section.hidden = false;
     const title = t('introTitle');
+    const thumb = `https://img.youtube.com/vi/${cfg.youtubeId}/maxresdefault.jpg`;
+
+    if (shell) shell.classList.toggle('intro-video__shell--shorts', !!cfg.isShorts);
+    if (bg) bg.style.backgroundImage = `url('${thumb}')`;
+
     player.innerHTML = `
       <iframe src="https://www.youtube-nocookie.com/embed/${cfg.youtubeId}?rel=0&modestbranding=1"
               title="${title}" loading="lazy"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowfullscreen></iframe>`;
+
+    renderIntroHighlights();
+  }
+
+  function renderIntroHighlights() {
+    const container = document.getElementById('intro-highlights');
+    if (!container) return;
+
+    const items = SITE_CONFIG.introHighlights || [];
+    container.innerHTML = items.map((item) => `
+      <div class="intro-highlight">
+        <span class="intro-highlight__icon" aria-hidden="true">✓</span>
+        <span>${t(item.key)}</span>
+      </div>`).join('');
   }
 
   function renderGallery() {

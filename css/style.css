@@ -390,6 +390,16 @@ body {
   background-clip: text;
 }
 
+/* Синий фон для важных слов — как Reforma-Spain */
+.mark-highlight {
+  background: #102ea1;
+  color: #fff;
+  padding: 0.06em 0.4em;
+  border-radius: 6px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
 .hero__subtitle {
   color: var(--text-muted);
   font-size: 1.1rem;
@@ -862,21 +872,68 @@ a.partner-card:hover .partner-card__logo img {
   line-height: 1.3;
 }
 
-/* Intro video — отдельный блок вступления */
+/* Intro video — видео в рамке + синяя панель (Reforma-Spain style) */
 .intro-video {
   padding: 72px 0;
-  background: linear-gradient(180deg, transparent 0%, rgba(6, 182, 212, 0.04) 50%, transparent 100%);
+  background: linear-gradient(180deg, transparent 0%, rgba(16, 46, 161, 0.06) 50%, transparent 100%);
+}
+
+.intro-video__layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  align-items: stretch;
+}
+
+.intro-video__media {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Внешняя «рамка» — размытый фон + видео внутри */
+.intro-video__shell {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  padding: 20px;
+  border-radius: calc(var(--radius) + 4px);
+  border: 2px solid rgba(16, 46, 161, 0.45);
+  background: rgba(10, 14, 23, 0.85);
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+
+.intro-video__shell--shorts {
+  max-width: 340px;
+}
+
+.intro-video__bg {
+  position: absolute;
+  inset: -20%;
+  background-size: cover;
+  background-position: center;
+  filter: blur(18px) brightness(0.45);
+  transform: scale(1.1);
+  z-index: 0;
 }
 
 .intro-video__player {
-  max-width: 880px;
+  position: relative;
+  z-index: 1;
+  width: 100%;
   margin: 0 auto;
   aspect-ratio: 16 / 9;
-  border-radius: var(--radius);
+  border-radius: var(--radius-sm);
   overflow: hidden;
-  border: 1px solid var(--border);
+  border: 2px solid rgba(255, 255, 255, 0.12);
   background: #000;
-  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+}
+
+.intro-video__shell--shorts .intro-video__player {
+  aspect-ratio: 9 / 16;
+  max-width: 280px;
 }
 
 .intro-video__player iframe {
@@ -884,6 +941,64 @@ a.partner-card:hover .partner-card__logo img {
   height: 100%;
   border: 0;
   display: block;
+}
+
+.intro-video__side {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 12px;
+}
+
+.intro-video__side h2 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.intro-video__desc {
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+/* Синяя панель с ключевыми пунктами */
+.intro-video__highlights {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  background: #102ea1;
+  border-radius: var(--radius);
+  padding: 8px 0;
+  margin-top: 8px;
+  box-shadow: 0 16px 40px rgba(16, 46, 161, 0.35);
+}
+
+.intro-highlight {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 24px;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.35;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.intro-highlight:last-child {
+  border-bottom: none;
+}
+
+.intro-highlight__icon {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 50%;
+  font-size: 0.85rem;
+  font-weight: 700;
 }
 
 /* Gallery */
@@ -1497,6 +1612,17 @@ a.partner-card:hover .partner-card__logo img {
 
 /* Responsive */
 @media (max-width: 960px) {
+  .intro-video__layout {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+
+  .intro-video__shell,
+  .intro-video__shell--shorts {
+    max-width: 320px;
+    margin: 0 auto;
+  }
+
   .hero__inner {
     grid-template-columns: 1fr;
     gap: 40px;

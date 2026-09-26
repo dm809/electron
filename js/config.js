@@ -25,7 +25,16 @@ const SITE_CONFIG = {
     enabled: true,
     youtubeId: 'DHUvzaPB1y4',
     lang: 'es',
+    isShorts: true,
   },
+
+  // Ключевые пункты — синяя панель рядом с видео
+  introHighlights: [
+    { key: 'hl1' },
+    { key: 'hl2' },
+    { key: 'hl3' },
+    { key: 'hl4' },
+  ],
 
   // GitHub Pages: https://dm809.github.io/electron/
   // Свой домен: https://dmitrii-elektron.es/
