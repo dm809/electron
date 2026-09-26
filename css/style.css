@@ -1030,6 +1030,53 @@ a.partner-card:hover .partner-card__logo img {
   aspect-ratio: 16 / 9;
 }
 
+.gallery__item--youtube {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  grid-column: span 2;
+  cursor: pointer;
+  transition: transform 0.2s, border-color 0.2s;
+}
+
+.gallery__item--youtube:hover {
+  transform: translateY(-2px);
+  border-color: rgba(6, 182, 212, 0.45);
+}
+
+.gallery__item--youtube.gallery__item--shorts {
+  aspect-ratio: 9 / 16;
+  max-height: 420px;
+  justify-self: center;
+}
+
+.gallery__item--youtube img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.gallery__play-btn {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.35);
+  transition: background 0.2s;
+}
+
+.gallery__item--youtube:hover .gallery__play-btn {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.gallery__play-btn svg {
+  width: 48px;
+  height: 48px;
+  color: #fff;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.5));
+}
+
 .gallery__item iframe,
 .gallery__item video {
   width: 100%;
@@ -1682,6 +1729,11 @@ a.partner-card:hover .partner-card__logo img {
 
   .gallery__grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .gallery__item--youtube {
+    grid-column: span 2;
+    max-height: 480px;
   }
 
   .partner-card {

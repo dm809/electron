@@ -197,6 +197,12 @@
       </div>`).join('');
   }
 
+  function youtubeWatchUrl(videoId, isShorts) {
+    return isShorts
+      ? `https://www.youtube.com/shorts/${videoId}`
+      : `https://www.youtube.com/watch?v=${videoId}`;
+  }
+
   function renderGallery() {
     const grid = document.getElementById('gallery-grid');
     if (!grid) return;
@@ -206,13 +212,17 @@
       const type = item.type || (item.videoId ? 'youtube' : item.src?.includes('.mp4') ? 'video' : 'image');
 
       if (type === 'youtube' && item.videoId) {
+        const shortsClass = item.isShorts ? ' gallery__item--shorts' : '';
+        const watchUrl = youtubeWatchUrl(item.videoId, item.isShorts);
+        const thumb = `https://img.youtube.com/vi/${item.videoId}/hqdefault.jpg`;
         return `
-      <div class="gallery__item gallery__item--video">
-        <iframe src="https://www.youtube-nocookie.com/embed/${item.videoId}?rel=0"
-                title="${alt}" loading="lazy"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowfullscreen></iframe>
-      </div>`;
+      <a href="${watchUrl}" class="gallery__item gallery__item--youtube${shortsClass}"
+         target="_blank" rel="noopener noreferrer" aria-label="${alt}">
+        <img src="${thumb}" alt="${alt}" loading="lazy">
+        <span class="gallery__play-btn" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        </span>
+      </a>`;
       }
 
       if (type === 'video') {
