@@ -75,6 +75,34 @@ const SITE_CONFIG = {
     'Rheem', 'Goodman', 'Cooper & Hunter', 'Aux',
   ],
 
+  // Фирменные цвета марок (как в каталогах продаж)
+  brandColors: {
+    'Daikin': '#006CB7',
+    'Mitsubishi Electric': '#E60012',
+    'LG': '#A50034',
+    'Toshiba': '#FF0032',
+    'Fujitsu': '#E4002B',
+    'Carrier': '#009CDE',
+    'Hitachi': '#E60027',
+    'Panasonic': '#0049B7',
+    'Samsung': '#1428A0',
+    'Haier': '#0060A9',
+    'Midea': '#0099DA',
+    'Gree': '#00A651',
+    'York': '#003DA5',
+    'Trane': '#E31837',
+    'Lennox': '#C8102E',
+    'Bosch': '#EA0016',
+    'Vaillant': '#009EE3',
+    'Viessmann': '#FF6600',
+    'Hisense': '#009A44',
+    'McQuay': '#0054A4',
+    'Rheem': '#E31837',
+    'Goodman': '#005DAA',
+    'Cooper & Hunter': '#0072CE',
+    'Aux': '#00A651',
+  },
+
   // Партнёры — секция скрыта, пока не добавишь логотипы (showPartners: true)
   showPartners: true,
   partners: [

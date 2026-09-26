@@ -115,10 +115,20 @@
     if (phoneEl) phoneEl.href = `tel:${SITE_CONFIG.phone.replace(/\s/g, '')}`;
   }
 
+  function brandColorStyle(name) {
+    const hex = (SITE_CONFIG.brandColors || {})[name] || '#06b6d4';
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return `color:${hex};background:rgba(${r},${g},${b},0.14);border-color:rgba(${r},${g},${b},0.38)`;
+  }
+
   function renderBrands() {
     const grid = document.getElementById('brands-grid');
     if (!grid || !SITE_CONFIG.brands) return;
-    grid.innerHTML = SITE_CONFIG.brands.map((b) => `<span>${b}</span>`).join('');
+    grid.innerHTML = SITE_CONFIG.brands.map((brand) =>
+      `<span class="brand-tag" style="${brandColorStyle(brand)}">${brand}</span>`
+    ).join('');
   }
 
   function renderSpeakTags() {
@@ -197,12 +207,6 @@
       </div>`).join('');
   }
 
-  function youtubeWatchUrl(videoId, isShorts) {
-    return isShorts
-      ? `https://www.youtube.com/shorts/${videoId}`
-      : `https://www.youtube.com/watch?v=${videoId}`;
-  }
-
   function renderGallery() {
     const grid = document.getElementById('gallery-grid');
     if (!grid) return;
@@ -213,16 +217,13 @@
 
       if (type === 'youtube' && item.videoId) {
         const shortsClass = item.isShorts ? ' gallery__item--shorts' : '';
-        const watchUrl = youtubeWatchUrl(item.videoId, item.isShorts);
-        const thumb = `https://img.youtube.com/vi/${item.videoId}/hqdefault.jpg`;
         return `
-      <a href="${watchUrl}" class="gallery__item gallery__item--youtube${shortsClass}"
-         target="_blank" rel="noopener noreferrer" aria-label="${alt}">
-        <img src="${thumb}" alt="${alt}" loading="lazy">
-        <span class="gallery__play-btn" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-        </span>
-      </a>`;
+      <div class="gallery__item gallery__item--youtube gallery__item--embed${shortsClass}">
+        <iframe src="https://www.youtube-nocookie.com/embed/${item.videoId}?rel=0&modestbranding=1"
+                title="${alt}" loading="lazy"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowfullscreen></iframe>
+      </div>`;
       }
 
       if (type === 'video') {
