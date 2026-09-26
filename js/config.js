@@ -23,7 +23,7 @@ const SITE_CONFIG = {
   // Видео-вступление (отдельный блок, не галерея)
   introVideo: {
     enabled: true,
-    youtubeId: 'DHUvzaPB1y4',
+    youtubeId: 'WFA6X7T9AWM',
     lang: 'es',
     isShorts: true,
   },
@@ -97,6 +97,7 @@ const SITE_CONFIG = {
     hero: 'images/logo.jpg',
     // Галерея: фото, YouTube и MP4. Примеры ниже — раскомментируй и добавь свои.
     gallery: [
+      { type: 'youtube', videoId: 'N6gf74ekEX8', altKey: 'galVideo1' },
       { type: 'image', src: 'images/gallery-work-1.jpg', altKey: 'gal8' },
       { type: 'image', src: 'images/gallery-work-2.jpg', altKey: 'gal9' },
       { type: 'image', src: 'images/gallery-work-3.jpg', altKey: 'gal10' },
