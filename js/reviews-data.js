@@ -1,6 +1,18 @@
 /** Отзывы на сайте */
 const SITE_REVIEWS = [
   {
+    name: 'María Jesús López',
+    rating: 5,
+    text: 'Muy bien, rápido, amable y eficiente. Todo perfecto!!',
+    date: '2026-08-15T13:56:32.000Z',
+  },
+  {
+    name: 'Romeo',
+    rating: 5,
+    text: 'Perfecto. Dmitrii maestro muy bueno. Gracias',
+    date: '2026-08-02T22:19:04.000Z',
+  },
+  {
     name: 'Mitchell',
     rating: 5,
     text: 'Mitsubishi heat pump repair — done to a very high standard. Professional team.',

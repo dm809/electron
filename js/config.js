@@ -74,6 +74,11 @@ const SITE_CONFIG = {
       logo: 'images/partners/domyka.png',
       url: 'https://domyka.es/',
     },
+    {
+      name: 'Reforma-Spain.es',
+      logo: 'images/partners/reforma-spain.png',
+      url: 'https://www.reforma-spain.es/',
+    },
   ],
 
   logo: 'images/logo.jpg',
