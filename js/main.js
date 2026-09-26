@@ -117,23 +117,8 @@
 
   function brandStyleAttr(name) {
     const styles = SITE_CONFIG.brandStyles || {};
-    const s = styles[name] || { color: '#06b6d4', fontFamily: 'inherit', fontWeight: '700' };
-    const hex = s.color || '#06b6d4';
-    const r = parseInt(hex.slice(1, 3), 16);
-    const g = parseInt(hex.slice(3, 5), 16);
-    const b = parseInt(hex.slice(5, 7), 16);
-    const parts = [
-      `color:${hex}`,
-      `background:rgba(${r},${g},${b},0.12)`,
-      `border-color:rgba(${r},${g},${b},0.35)`,
-      `font-family:${s.fontFamily || 'inherit'}`,
-      `font-weight:${s.fontWeight || '700'}`,
-    ];
-    if (s.fontStyle) parts.push(`font-style:${s.fontStyle}`);
-    if (s.letterSpacing) parts.push(`letter-spacing:${s.letterSpacing}`);
-    if (s.textTransform) parts.push(`text-transform:${s.textTransform}`);
-    if (s.fontSize) parts.push(`font-size:${s.fontSize}`);
-    return parts.join(';');
+    const hex = (styles[name] || {}).color || '#374151';
+    return `color:${hex}`;
   }
 
   function renderBrands() {

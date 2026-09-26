@@ -172,12 +172,7 @@ const SITE_CONFIG = {
       letterSpacing: '0.03em',
     },
     Daikin: {
-      color: '#006CB7',
-      fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif',
-      fontWeight: '700',
-      letterSpacing: '0.2em',
-      textTransform: 'uppercase',
-      fontSize: '0.82rem',
+      color: '#00A0E9',
     },
     Trane: {
       color: '#E31837',
