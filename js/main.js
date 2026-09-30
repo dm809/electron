@@ -159,11 +159,15 @@
         </div>
         <span class="partner-card__name">${p.name}</span>`;
 
-      if (p.url) {
-        return `<a href="${p.url}" class="partner-card" target="_blank" rel="noopener">${inner}</a>`;
+      if (p.url && p.linkEnabled !== false) {
+        return `<a href="${p.url}" class="partner-card" target="_blank" rel="noopener noreferrer">${inner}</a>`;
       }
-      return `<div class="partner-card">${inner}</div>`;
+      return `<a href="#" class="partner-card partner-card--nolink">${inner}</a>`;
     }).join('');
+
+    grid.querySelectorAll('.partner-card--nolink').forEach((el) => {
+      el.addEventListener('click', (e) => e.preventDefault());
+    });
   }
 
   function renderIntroVideo() {

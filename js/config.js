@@ -190,6 +190,7 @@ const SITE_CONFIG = {
       name: 'DOMYKA',
       logo: 'images/partners/domyka.png',
       url: 'https://domyka.es/',
+      linkEnabled: false, // временно: логотип без перехода на сайт
     },
     {
       name: 'Reforma-Spain.es',
