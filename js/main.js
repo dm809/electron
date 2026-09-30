@@ -1,7 +1,8 @@
 (function () {
   'use strict';
 
-  const SUPPORTED = ['ru', 'es', 'en'];
+  const SUPPORTED = ['ru', 'es', 'en', 'uk'];
+  const LANG_FLAGS = { ru: '🇷🇺', es: '🇪🇸', en: '🇬🇧', uk: '🇺🇦' };
 
   function detectBrowserLang() {
     const manual = localStorage.getItem('site-lang-manual');
@@ -18,12 +19,20 @@
 
     for (const raw of langs) {
       const code = raw.toLowerCase().split('-')[0];
-      if (code === 'uk') return 'ru';
       if (code === 'de') return 'en';
       if (SUPPORTED.includes(code)) return code;
     }
 
     return SITE_CONFIG.defaultLang || 'es';
+  }
+
+  function getPhoneForLang(lang) {
+    const contacts = SITE_CONFIG.phoneContacts;
+    if (contacts?.length) {
+      const match = contacts.find((c) => c.langs?.includes(lang));
+      if (match) return match;
+    }
+    return { phone: SITE_CONFIG.phone, display: SITE_CONFIG.phone };
   }
 
   let currentLang = detectBrowserLang();
@@ -77,6 +86,7 @@
     });
 
     updateLinks();
+    renderHeaderPhones();
     renderSpeakTags();
     renderBrands();
     renderPartners();
@@ -111,8 +121,30 @@
     const emailEl = document.getElementById('contact-email');
     if (emailEl) emailEl.href = `mailto:${SITE_CONFIG.email}`;
 
+    const phoneContact = getPhoneForLang(currentLang);
     const phoneEl = document.getElementById('contact-phone');
-    if (phoneEl) phoneEl.href = `tel:${SITE_CONFIG.phone.replace(/\s/g, '')}`;
+    if (phoneEl) {
+      phoneEl.href = `tel:${phoneContact.phone.replace(/\s/g, '')}`;
+      const phoneSub = document.getElementById('contact-phone-sub');
+      if (phoneSub) phoneSub.textContent = phoneContact.display || phoneContact.phone;
+    }
+  }
+
+  function renderHeaderPhones() {
+    const container = document.getElementById('header-phones');
+    if (!container) return;
+
+    const contacts = SITE_CONFIG.phoneContacts || [];
+    container.innerHTML = contacts.map((c) => {
+      const flags = (c.langs || [])
+        .map((code) => `<span class="header-phone__flag" aria-hidden="true">${LANG_FLAGS[code] || code}</span>`)
+        .join('');
+      const tel = c.phone.replace(/\s/g, '');
+      return `<a href="tel:${tel}" class="header-phone">
+        <span class="header-phone__number">${c.display || c.phone}</span>
+        <span class="header-phone__flags">${flags}</span>
+      </a>`;
+    }).join('');
   }
 
   function brandStyleAttr(name) {
@@ -272,7 +304,7 @@
       name: SITE_CONFIG.brandName,
       founder: { '@type': 'Person', name: SITE_CONFIG.ownerName },
       description: t('metaDescription'),
-      telephone: SITE_CONFIG.phone,
+      telephone: (SITE_CONFIG.phoneContacts || []).map((c) => c.phone),
       email: SITE_CONFIG.email,
       areaServed: SITE_CONFIG.region,
       address: {

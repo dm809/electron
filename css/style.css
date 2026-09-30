@@ -96,6 +96,54 @@ body {
   align-items: center;
   justify-content: space-between;
   height: 100%;
+  gap: 12px;
+}
+
+.header__brand {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-shrink: 0;
+  min-width: 0;
+}
+
+.header-phones {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.header-phone {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  text-decoration: none;
+  color: var(--text);
+  line-height: 1.15;
+  transition: color 0.2s;
+}
+
+.header-phone:hover {
+  color: var(--accent);
+}
+
+.header-phone__number {
+  font-size: 1.12rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.header-phone__flags {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
+}
+
+.header-phone__flag {
+  font-size: 0.72rem;
+  line-height: 1;
 }
 
 .logo {
@@ -1708,7 +1756,29 @@ a.partner-card:hover .partner-card__logo img {
   }
 }
 
+@media (max-width: 960px) {
+  .nav {
+    gap: 16px;
+  }
+
+  .nav a {
+    font-size: 0.82rem;
+  }
+
+  .header-phone__number {
+    font-size: 0.95rem;
+  }
+
+  .header__brand {
+    gap: 12px;
+  }
+}
+
 @media (max-width: 640px) {
+  :root {
+    --header-h: 80px;
+  }
+
   .nav {
     display: none;
   }
@@ -1716,6 +1786,33 @@ a.partner-card:hover .partner-card__logo img {
   /* Переключатель языка в шапке — как на десктопе */
   .header__actions {
     display: flex;
+  }
+
+  .header__brand {
+    gap: 8px;
+  }
+
+  .header-phone__number {
+    font-size: 0.78rem;
+    font-weight: 700;
+  }
+
+  .header-phone__flag {
+    font-size: 0.62rem;
+  }
+
+  .logo__text {
+    font-size: 1rem;
+  }
+
+  .logo__img {
+    width: 38px;
+    height: 38px;
+  }
+
+  .lang-switch__btn {
+    padding: 6px 8px;
+    font-size: 0.72rem;
   }
 
   .header__cta {

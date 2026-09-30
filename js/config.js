@@ -10,6 +10,19 @@ const SITE_CONFIG = {
   tagline: 'interesantes ideas de dmitrii',
 
   phone: '+34643292197',
+  phoneContacts: [
+    {
+      phone: '+34643292197',
+      display: '+34 643 292 197',
+      langs: ['ru', 'es'],
+    },
+    {
+      phone: '+34632959656',
+      display: '+34 632 959 656',
+      name: 'Eugenii',
+      langs: ['en', 'uk'],
+    },
+  ],
   email: 'gordienkodmytro9@gmail.com',
 
   whatsappUrl: 'https://wa.me/message/QRZS65C6P4KGM1',
@@ -61,7 +74,7 @@ const SITE_CONFIG = {
   googleAdsConversion: 'AW-18280309759/cen5CI-HyMocEP_H3YxE',
   googleAnalyticsId: '',
 
-  speakLanguages: ['ru', 'es', 'en', 'uk', 'de'],
+  speakLanguages: ['ru', 'es', 'en', 'uk'],
   defaultLang: 'es',
 
   // Автоязык: ru / es / en по браузеру клиента (uk→ru, de→en)
