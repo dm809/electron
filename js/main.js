@@ -72,8 +72,59 @@
       cc_load_policy: '1',
       cc_lang: lang,
       hl: lang,
+      enablejsapi: '1',
+      origin: location.origin,
     });
-    return `https://www.youtube-nocookie.com/embed/${videoId}?${params}`;
+    return `https://www.youtube-nocookie.com/embed/${videoId}?${params.toString()}&lang=${lang}`;
+  }
+
+  let introYtPlayer = null;
+  let introYtLang = null;
+  let introYtVideoId = null;
+  let ytApiPromise = null;
+
+  function ensureYouTubeApi() {
+    if (window.YT && window.YT.Player) return Promise.resolve();
+    if (ytApiPromise) return ytApiPromise;
+
+    ytApiPromise = new Promise((resolve) => {
+      const prev = window.onYouTubeIframeAPIReady;
+      window.onYouTubeIframeAPIReady = () => {
+        if (typeof prev === 'function') prev();
+        resolve();
+      };
+
+      if (!document.querySelector('script[src*="youtube.com/iframe_api"]')) {
+        const tag = document.createElement('script');
+        tag.src = 'https://www.youtube.com/iframe_api';
+        tag.async = true;
+        document.head.appendChild(tag);
+      }
+    });
+
+    return ytApiPromise;
+  }
+
+  function applyYoutubeCaptions(player, lang) {
+    if (!player || typeof player.setOption !== 'function') return;
+    try {
+      player.loadModule('captions');
+      player.setOption('captions', 'track', { languageCode: lang });
+    } catch (_) {
+      /* плеер ещё не готов */
+    }
+  }
+
+  function destroyIntroPlayer() {
+    if (!introYtPlayer) return;
+    try {
+      introYtPlayer.destroy();
+    } catch (_) {
+      /* ignore */
+    }
+    introYtPlayer = null;
+    introYtLang = null;
+    introYtVideoId = null;
   }
 
   function buildWhatsappUrl() {
@@ -224,25 +275,61 @@
     const section = document.getElementById('intro');
     const shell = document.getElementById('intro-video-shell');
     const bg = document.getElementById('intro-video-bg');
-    const player = document.getElementById('intro-video-player');
+    const playerEl = document.getElementById('intro-video-player');
     const cfg = SITE_CONFIG.introVideo;
-    if (!section || !player || !cfg?.enabled || !cfg.youtubeId) {
+    if (!section || !playerEl || !cfg?.enabled || !cfg.youtubeId) {
+      destroyIntroPlayer();
       if (section) section.hidden = true;
       return;
     }
 
     section.hidden = false;
-    const title = t('introTitle');
-    const thumb = `https://img.youtube.com/vi/${cfg.youtubeId}/maxresdefault.jpg`;
+    const lang = youtubeCaptionLang(currentLang);
+    const videoId = cfg.youtubeId;
+    const thumb = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
 
     if (shell) shell.classList.toggle('intro-video__shell--shorts', !!cfg.isShorts);
     if (bg) bg.style.backgroundImage = `url('${thumb}')`;
 
-    player.innerHTML = `
-      <iframe src="${youtubeEmbedUrl(cfg.youtubeId)}"
-              title="${title}" loading="lazy"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowfullscreen></iframe>`;
+    if (introYtPlayer && introYtLang === lang && introYtVideoId === videoId) {
+      applyYoutubeCaptions(introYtPlayer, lang);
+      renderIntroHighlights();
+      return;
+    }
+
+    destroyIntroPlayer();
+    playerEl.innerHTML = '<div id="intro-yt-mount"></div>';
+
+    ensureYouTubeApi().then(() => {
+      if (!document.getElementById('intro-yt-mount')) return;
+
+      introYtLang = lang;
+      introYtVideoId = videoId;
+
+      introYtPlayer = new YT.Player('intro-yt-mount', {
+        host: 'https://www.youtube-nocookie.com',
+        videoId,
+        playerVars: {
+          rel: 0,
+          modestbranding: 1,
+          cc_load_policy: 1,
+          cc_lang: lang,
+          hl: lang,
+          playsinline: 1,
+          origin: location.origin,
+        },
+        events: {
+          onReady: (event) => {
+            applyYoutubeCaptions(event.target, lang);
+          },
+          onStateChange: (event) => {
+            if (event.data === YT.PlayerState.PLAYING) {
+              applyYoutubeCaptions(event.target, lang);
+            }
+          },
+        },
+      });
+    });
 
     renderIntroHighlights();
   }
