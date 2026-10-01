@@ -1,6 +1,18 @@
 /** Отзывы на сайте */
 const SITE_REVIEWS = [
   {
+    name: 'Роман',
+    rating: 5,
+    text: 'Дмитрий отличный мастер, быстро и оперативно починил плату от кондиционера, которую не смогли починить в другой фирме а вместо этого советовали нам полностью поменять устройство. На этом мы сэкономили примерно 700€!!!',
+    date: '2026-10-01T16:24:08.000Z',
+  },
+  {
+    name: 'Gustavo',
+    rating: 5,
+    text: 'Muy buen servicio, profesional y resolvió el problema de mi aire acondicionado. Recomendado.',
+    date: '2026-10-01T15:48:30.000Z',
+  },
+  {
     name: 'María Jesús López',
     rating: 5,
     text: 'Muy bien, rápido, amable y eficiente. Todo perfecto!!',
