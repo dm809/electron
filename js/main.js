@@ -58,6 +58,24 @@
     return `${siteBase()}${path.replace(/^\//, '')}`;
   }
 
+  /** Язык субтитров YouTube = язык сайта (ru/es/en/uk) */
+  function youtubeCaptionLang(siteLang) {
+    const map = { ru: 'ru', es: 'es', en: 'en', uk: 'uk' };
+    return map[siteLang] || SITE_CONFIG.introVideo?.lang || 'ru';
+  }
+
+  function youtubeEmbedUrl(videoId) {
+    const lang = youtubeCaptionLang(currentLang);
+    const params = new URLSearchParams({
+      rel: '0',
+      modestbranding: '1',
+      cc_load_policy: '1',
+      cc_lang: lang,
+      hl: lang,
+    });
+    return `https://www.youtube-nocookie.com/embed/${videoId}?${params}`;
+  }
+
   function buildWhatsappUrl() {
     if (SITE_CONFIG.whatsappUrl) return SITE_CONFIG.whatsappUrl;
     const msg = (I18N[currentLang] || I18N.ru).waMessage;
@@ -221,7 +239,7 @@
     if (bg) bg.style.backgroundImage = `url('${thumb}')`;
 
     player.innerHTML = `
-      <iframe src="https://www.youtube-nocookie.com/embed/${cfg.youtubeId}?rel=0&modestbranding=1"
+      <iframe src="${youtubeEmbedUrl(cfg.youtubeId)}"
               title="${title}" loading="lazy"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowfullscreen></iframe>`;
@@ -253,7 +271,7 @@
         const shortsClass = item.isShorts ? ' gallery__item--shorts' : '';
         return `
       <div class="gallery__item gallery__item--youtube gallery__item--embed${shortsClass}">
-        <iframe src="https://www.youtube-nocookie.com/embed/${item.videoId}?rel=0&modestbranding=1"
+        <iframe src="${youtubeEmbedUrl(item.videoId)}"
                 title="${alt}" loading="lazy"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 allowfullscreen></iframe>
