@@ -36,7 +36,7 @@ const SITE_CONFIG = {
   // Видео-вступление (отдельный блок, не галерея)
   introVideo: {
     enabled: true,
-    youtubeId: 'WFA6X7T9AWM',
+    youtubeId: '0zbjmG7aUn8',
     lang: 'ru', // язык речи в ролике; субтитры на сайте = язык переключателя
     isShorts: true,
   },
