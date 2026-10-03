@@ -36,9 +36,15 @@ const SITE_CONFIG = {
   // Видео-вступление (отдельный блок, не галерея)
   introVideo: {
     enabled: true,
-    youtubeId: '0zbjmG7aUn8',
-    lang: 'ru', // язык речи в ролике; субтитры на сайте = язык переключателя
     isShorts: true,
+    // RU — оригинальный шорт на русском; ES/EN/UA — шорт с мультиязычной озвучкой YouTube
+    youtubeIds: {
+      ru: 'WFA6X7T9AWM',
+      es: '0zbjmG7aUn8',
+      en: '0zbjmG7aUn8',
+      uk: '0zbjmG7aUn8',
+    },
+    dubVideoId: '0zbjmG7aUn8',
   },
 
   // Ключевые пункты — синяя панель рядом с видео

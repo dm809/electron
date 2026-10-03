@@ -58,23 +58,59 @@
     return `${siteBase()}${path.replace(/^\//, '')}`;
   }
 
-  /** Язык субтитров YouTube = язык сайта (ru/es/en/uk) */
+  /** Язык YouTube (озвучка / субтитры) = язык сайта */
   function youtubeCaptionLang(siteLang) {
     const map = { ru: 'ru', es: 'es', en: 'en', uk: 'uk' };
-    return map[siteLang] || SITE_CONFIG.introVideo?.lang || 'ru';
+    return map[siteLang] || 'en';
   }
 
-  function youtubeEmbedUrl(videoId) {
+  function getIntroVideoId(siteLang) {
+    const cfg = SITE_CONFIG.introVideo;
+    if (!cfg) return '';
+    if (cfg.youtubeIds && cfg.youtubeIds[siteLang]) return cfg.youtubeIds[siteLang];
+    return cfg.youtubeId || cfg.dubVideoId || '';
+  }
+
+  function isIntroDubVideo(videoId) {
+    const cfg = SITE_CONFIG.introVideo;
+    return !!videoId && videoId === cfg?.dubVideoId;
+  }
+
+  function introPlayerVars(lang, videoId) {
+    const isDub = isIntroDubVideo(videoId);
+    const vars = {
+      rel: 0,
+      modestbranding: 1,
+      hl: lang,
+      playsinline: 1,
+      origin: location.origin,
+    };
+    if (isDub) {
+      // Мультиязычная озвучка YouTube — без принудительных субтитров
+      vars.cc_load_policy = 0;
+    } else {
+      vars.cc_load_policy = 1;
+      vars.cc_lang = lang;
+    }
+    return vars;
+  }
+
+  function youtubeEmbedUrl(videoId, opts = {}) {
     const lang = youtubeCaptionLang(currentLang);
+    const isDub = opts.dub || videoId === SITE_CONFIG.introVideo?.dubVideoId;
     const params = new URLSearchParams({
       rel: '0',
       modestbranding: '1',
-      cc_load_policy: '1',
-      cc_lang: lang,
       hl: lang,
       enablejsapi: '1',
       origin: location.origin,
     });
+    if (isDub) {
+      params.set('cc_load_policy', '0');
+    } else {
+      params.set('cc_load_policy', '1');
+      params.set('cc_lang', lang);
+    }
     return `https://www.youtube-nocookie.com/embed/${videoId}?${params.toString()}&lang=${lang}`;
   }
 
@@ -112,6 +148,32 @@
       player.setOption('captions', 'track', { languageCode: lang });
     } catch (_) {
       /* плеер ещё не готов */
+    }
+  }
+
+  /** Попытка переключить озвучку (если YouTube отдал API) */
+  function applyYoutubeAudio(player, lang) {
+    if (!player) return;
+    try {
+      if (typeof player.getAvailableAudioTracks === 'function') {
+        const tracks = player.getAvailableAudioTracks();
+        const match = tracks.find((tr) =>
+          tr.language_code === lang || tr.id === lang || tr.languageCode === lang
+        );
+        if (match && typeof player.setAudioTrack === 'function') {
+          player.setAudioTrack(match.id || match.language_code || lang);
+        }
+      }
+    } catch (_) {
+      /* не все ролики отдают audio API */
+    }
+  }
+
+  function applyYoutubeLocale(player, lang, videoId) {
+    if (isIntroDubVideo(videoId)) {
+      applyYoutubeAudio(player, lang);
+    } else {
+      applyYoutubeCaptions(player, lang);
     }
   }
 
@@ -277,7 +339,8 @@
     const bg = document.getElementById('intro-video-bg');
     const playerEl = document.getElementById('intro-video-player');
     const cfg = SITE_CONFIG.introVideo;
-    if (!section || !playerEl || !cfg?.enabled || !cfg.youtubeId) {
+    const videoId = getIntroVideoId(currentLang);
+    if (!section || !playerEl || !cfg?.enabled || !videoId) {
       destroyIntroPlayer();
       if (section) section.hidden = true;
       return;
@@ -285,14 +348,13 @@
 
     section.hidden = false;
     const lang = youtubeCaptionLang(currentLang);
-    const videoId = cfg.youtubeId;
     const thumb = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
 
     if (shell) shell.classList.toggle('intro-video__shell--shorts', !!cfg.isShorts);
     if (bg) bg.style.backgroundImage = `url('${thumb}')`;
 
     if (introYtPlayer && introYtLang === lang && introYtVideoId === videoId) {
-      applyYoutubeCaptions(introYtPlayer, lang);
+      applyYoutubeLocale(introYtPlayer, lang, videoId);
       renderIntroHighlights();
       return;
     }
@@ -309,22 +371,17 @@
       introYtPlayer = new YT.Player('intro-yt-mount', {
         host: 'https://www.youtube-nocookie.com',
         videoId,
-        playerVars: {
-          rel: 0,
-          modestbranding: 1,
-          cc_load_policy: 1,
-          cc_lang: lang,
-          hl: lang,
-          playsinline: 1,
-          origin: location.origin,
-        },
+        playerVars: introPlayerVars(lang, videoId),
         events: {
           onReady: (event) => {
-            applyYoutubeCaptions(event.target, lang);
+            applyYoutubeLocale(event.target, lang, videoId);
+          },
+          onApiChange: (event) => {
+            applyYoutubeLocale(event.target, lang, videoId);
           },
           onStateChange: (event) => {
             if (event.data === YT.PlayerState.PLAYING) {
-              applyYoutubeCaptions(event.target, lang);
+              applyYoutubeLocale(event.target, lang, videoId);
             }
           },
         },
