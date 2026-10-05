@@ -37,11 +37,11 @@ const SITE_CONFIG = {
   introVideo: {
     enabled: true,
     isShorts: true,
-    // RU — русский шорт; EN — английский; UA — украинский; ES — пока мультиязычный
+    // RU / ES / EN / UA — отдельный шорт на каждый язык
     youtubeIds: {
       ru: 'WFA6X7T9AWM',
-      es: '0zbjmG7aUn8',
-      en: 'JUOfkTRGMSU',
+      es: 'JUOfkTRGMSU',
+      en: '0zbjmG7aUn8',
       uk: 'OApZFyOukuM',
     },
     dubVideoId: '0zbjmG7aUn8',
