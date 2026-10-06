@@ -76,23 +76,15 @@
     return !!videoId && videoId === cfg?.dubVideoId;
   }
 
-  function introPlayerVars(lang, videoId) {
-    const isDub = isIntroDubVideo(videoId);
-    const vars = {
+  function introPlayerVars(lang) {
+    return {
       rel: 0,
       modestbranding: 1,
       hl: lang,
       playsinline: 1,
       origin: location.origin,
+      cc_load_policy: 0,
     };
-    if (isDub) {
-      // Мультиязычная озвучка YouTube — без принудительных субтитров
-      vars.cc_load_policy = 0;
-    } else {
-      vars.cc_load_policy = 1;
-      vars.cc_lang = lang;
-    }
-    return vars;
   }
 
   function youtubeEmbedUrl(videoId, opts = {}) {
@@ -117,6 +109,7 @@
   let introYtPlayer = null;
   let introYtLang = null;
   let introYtVideoId = null;
+  let introRenderGen = 0;
   let ytApiPromise = null;
 
   function ensureYouTubeApi() {
@@ -153,28 +146,41 @@
 
   /** Попытка переключить озвучку (если YouTube отдал API) */
   function applyYoutubeAudio(player, lang) {
-    if (!player) return;
+    if (!player) return false;
     try {
       if (typeof player.getAvailableAudioTracks === 'function') {
         const tracks = player.getAvailableAudioTracks();
-        const match = tracks.find((tr) =>
-          tr.language_code === lang || tr.id === lang || tr.languageCode === lang
-        );
+        if (!tracks?.length) return false;
+        const langLower = lang.toLowerCase();
+        const match = tracks.find((tr) => {
+          const code = String(tr.language_code || tr.languageCode || tr.id || '').toLowerCase();
+          return code === langLower || code.startsWith(`${langLower}-`);
+        });
         if (match && typeof player.setAudioTrack === 'function') {
           player.setAudioTrack(match.id || match.language_code || lang);
+          return true;
         }
       }
     } catch (_) {
       /* не все ролики отдают audio API */
     }
+    return false;
   }
 
-  function applyYoutubeLocale(player, lang, videoId) {
-    if (isIntroDubVideo(videoId)) {
-      applyYoutubeAudio(player, lang);
-    } else {
-      applyYoutubeCaptions(player, lang);
-    }
+  function scheduleIntroAudio(player, lang) {
+    let attempt = 0;
+    const trySet = () => {
+      if (!player || attempt > 6) return;
+      if (!applyYoutubeAudio(player, lang)) {
+        attempt += 1;
+        setTimeout(trySet, 350 * attempt);
+      }
+    };
+    trySet();
+  }
+
+  function applyYoutubeLocale(player, lang) {
+    scheduleIntroAudio(player, lang);
   }
 
   function destroyIntroPlayer() {
@@ -354,34 +360,40 @@
     if (bg) bg.style.backgroundImage = `url('${thumb}')`;
 
     if (introYtPlayer && introYtLang === lang && introYtVideoId === videoId) {
-      applyYoutubeLocale(introYtPlayer, lang, videoId);
+      applyYoutubeLocale(introYtPlayer, lang);
       renderIntroHighlights();
       return;
     }
 
     destroyIntroPlayer();
-    playerEl.innerHTML = '<div id="intro-yt-mount"></div>';
+    const gen = ++introRenderGen;
+    const mountId = `intro-yt-mount-${gen}`;
+    playerEl.innerHTML = `<div id="${mountId}"></div>`;
 
     ensureYouTubeApi().then(() => {
-      if (!document.getElementById('intro-yt-mount')) return;
+      if (gen !== introRenderGen) return;
+      if (!document.getElementById(mountId)) return;
 
       introYtLang = lang;
       introYtVideoId = videoId;
 
-      introYtPlayer = new YT.Player('intro-yt-mount', {
+      introYtPlayer = new YT.Player(mountId, {
         host: 'https://www.youtube-nocookie.com',
         videoId,
-        playerVars: introPlayerVars(lang, videoId),
+        playerVars: introPlayerVars(lang),
         events: {
           onReady: (event) => {
-            applyYoutubeLocale(event.target, lang, videoId);
+            if (gen !== introRenderGen) return;
+            applyYoutubeLocale(event.target, lang);
           },
           onApiChange: (event) => {
-            applyYoutubeLocale(event.target, lang, videoId);
+            if (gen !== introRenderGen) return;
+            applyYoutubeLocale(event.target, lang);
           },
           onStateChange: (event) => {
+            if (gen !== introRenderGen) return;
             if (event.data === YT.PlayerState.PLAYING) {
-              applyYoutubeLocale(event.target, lang, videoId);
+              applyYoutubeLocale(event.target, lang);
             }
           },
         },
