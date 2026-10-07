@@ -37,14 +37,14 @@ const SITE_CONFIG = {
   introVideo: {
     enabled: true,
     isShorts: true,
-    // RU / ES / EN / UA — отдельный шорт на каждый язык
+    // RU / ES / UA — родная озвучка; EN — оригинал (0zbjmG7aUn8)
     youtubeIds: {
       ru: 'WFA6X7T9AWM',
       es: 'JUOfkTRGMSU',
       en: '0zbjmG7aUn8',
       uk: 'OApZFyOukuM',
     },
-    dubVideoId: '0zbjmG7aUn8',
+    dubVideoId: '0zbjmG7aUn8', // только для EN, не fallback для других языков
   },
 
   // Ключевые пункты — синяя панель рядом с видео

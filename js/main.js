@@ -66,14 +66,17 @@
 
   function getIntroVideoId(siteLang) {
     const cfg = SITE_CONFIG.introVideo;
-    if (!cfg) return '';
-    if (cfg.youtubeIds && cfg.youtubeIds[siteLang]) return cfg.youtubeIds[siteLang];
-    return cfg.youtubeId || cfg.dubVideoId || '';
+    if (!cfg?.youtubeIds) return '';
+    return cfg.youtubeIds[siteLang] || '';
   }
 
   function isIntroDubVideo(videoId) {
     const cfg = SITE_CONFIG.introVideo;
     return !!videoId && videoId === cfg?.dubVideoId;
+  }
+
+  function isNativeIntroVideo(videoId) {
+    return !!videoId && !isIntroDubVideo(videoId);
   }
 
   function introPlayerVars(lang) {
@@ -110,6 +113,7 @@
   let introYtLang = null;
   let introYtVideoId = null;
   let introRenderGen = 0;
+  let introAudioTimers = [];
   let ytApiPromise = null;
 
   function ensureYouTubeApi() {
@@ -167,23 +171,34 @@
     return false;
   }
 
-  function scheduleIntroAudio(player, lang) {
+  function cancelIntroAudioSchedule() {
+    introAudioTimers.forEach((id) => clearTimeout(id));
+    introAudioTimers = [];
+  }
+
+  function scheduleIntroAudio(player, lang, gen) {
+    cancelIntroAudioSchedule();
     let attempt = 0;
     const trySet = () => {
-      if (!player || attempt > 6) return;
+      if (gen !== introRenderGen) return;
+      if (!player || attempt > 4) return;
       if (!applyYoutubeAudio(player, lang)) {
         attempt += 1;
-        setTimeout(trySet, 350 * attempt);
+        const timerId = setTimeout(trySet, 400 * attempt);
+        introAudioTimers.push(timerId);
       }
     };
     trySet();
   }
 
-  function applyYoutubeLocale(player, lang) {
-    scheduleIntroAudio(player, lang);
+  /** RU/ES/UA — родная озвучка ролика; EN — только dub-ролик */
+  function applyYoutubeLocale(player, lang, videoId) {
+    if (isNativeIntroVideo(videoId)) return;
+    scheduleIntroAudio(player, lang, introRenderGen);
   }
 
   function destroyIntroPlayer() {
+    cancelIntroAudioSchedule();
     if (!introYtPlayer) return;
     try {
       introYtPlayer.destroy();
@@ -360,7 +375,6 @@
     if (bg) bg.style.backgroundImage = `url('${thumb}')`;
 
     if (introYtPlayer && introYtLang === lang && introYtVideoId === videoId) {
-      applyYoutubeLocale(introYtPlayer, lang);
       renderIntroHighlights();
       return;
     }
@@ -384,17 +398,11 @@
         events: {
           onReady: (event) => {
             if (gen !== introRenderGen) return;
-            applyYoutubeLocale(event.target, lang);
+            applyYoutubeLocale(event.target, lang, videoId);
           },
           onApiChange: (event) => {
             if (gen !== introRenderGen) return;
-            applyYoutubeLocale(event.target, lang);
-          },
-          onStateChange: (event) => {
-            if (gen !== introRenderGen) return;
-            if (event.data === YT.PlayerState.PLAYING) {
-              applyYoutubeLocale(event.target, lang);
-            }
+            applyYoutubeLocale(event.target, lang, videoId);
           },
         },
       });
