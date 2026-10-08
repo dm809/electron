@@ -75,8 +75,22 @@
     return !!videoId && videoId === cfg?.dubVideoId;
   }
 
-  function isNativeIntroVideo(videoId) {
-    return !!videoId && !isIntroDubVideo(videoId);
+  function introNeedsDubAudio(siteLang, videoId) {
+    const cfg = SITE_CONFIG.introVideo;
+    if (!isIntroDubVideo(videoId)) return false;
+    const langs = cfg?.dubAudioLangs;
+    if (Array.isArray(langs)) return langs.includes(siteLang);
+    return siteLang === 'es';
+  }
+
+  function introIframeSrc(videoId, lang) {
+    const params = new URLSearchParams({
+      rel: '0',
+      modestbranding: '1',
+      hl: lang,
+      playsinline: '1',
+    });
+    return `https://www.youtube-nocookie.com/embed/${videoId}?${params.toString()}`;
   }
 
   function introPlayerVars(lang) {
@@ -110,8 +124,9 @@
   }
 
   let introYtPlayer = null;
-  let introYtLang = null;
-  let introYtVideoId = null;
+  let introActiveLang = null;
+  let introActiveVideoId = null;
+  let introActiveMode = null;
   let introRenderGen = 0;
   let introAudioTimers = [];
   let ytApiPromise = null;
@@ -191,23 +206,32 @@
     trySet();
   }
 
-  /** RU/ES/UA — родная озвучка ролика; EN — только dub-ролик */
-  function applyYoutubeLocale(player, lang, videoId) {
-    if (isNativeIntroVideo(videoId)) return;
+  function applyYoutubeLocale(player, lang) {
     scheduleIntroAudio(player, lang, introRenderGen);
   }
 
   function destroyIntroPlayer() {
     cancelIntroAudioSchedule();
-    if (!introYtPlayer) return;
-    try {
-      introYtPlayer.destroy();
-    } catch (_) {
-      /* ignore */
+    if (introYtPlayer) {
+      try {
+        introYtPlayer.destroy();
+      } catch (_) {
+        /* ignore */
+      }
+      introYtPlayer = null;
     }
-    introYtPlayer = null;
-    introYtLang = null;
-    introYtVideoId = null;
+    introActiveLang = null;
+    introActiveVideoId = null;
+    introActiveMode = null;
+  }
+
+  function renderIntroIframe(playerEl, videoId, lang) {
+    playerEl.innerHTML = `<iframe
+      src="${introIframeSrc(videoId, lang)}"
+      title="${t('introTitle')}"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+      allowfullscreen
+      loading="lazy"></iframe>`;
   }
 
   function buildWhatsappUrl() {
@@ -363,6 +387,7 @@
     const videoId = getIntroVideoId(currentLang);
     if (!section || !playerEl || !cfg?.enabled || !videoId) {
       destroyIntroPlayer();
+      playerEl && (playerEl.innerHTML = '');
       if (section) section.hidden = true;
       return;
     }
@@ -370,16 +395,32 @@
     section.hidden = false;
     const lang = youtubeCaptionLang(currentLang);
     const thumb = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+    const useDubApi = introNeedsDubAudio(currentLang, videoId);
 
     if (shell) shell.classList.toggle('intro-video__shell--shorts', !!cfg.isShorts);
     if (bg) bg.style.backgroundImage = `url('${thumb}')`;
 
-    if (introYtPlayer && introYtLang === lang && introYtVideoId === videoId) {
+    if (
+      introActiveLang === currentLang
+      && introActiveVideoId === videoId
+      && introActiveMode === (useDubApi ? 'api' : 'iframe')
+    ) {
       renderIntroHighlights();
       return;
     }
 
     destroyIntroPlayer();
+    playerEl.innerHTML = '';
+
+    if (!useDubApi) {
+      renderIntroIframe(playerEl, videoId, lang);
+      introActiveLang = currentLang;
+      introActiveVideoId = videoId;
+      introActiveMode = 'iframe';
+      renderIntroHighlights();
+      return;
+    }
+
     const gen = ++introRenderGen;
     const mountId = `intro-yt-mount-${gen}`;
     playerEl.innerHTML = `<div id="${mountId}"></div>`;
@@ -388,8 +429,9 @@
       if (gen !== introRenderGen) return;
       if (!document.getElementById(mountId)) return;
 
-      introYtLang = lang;
-      introYtVideoId = videoId;
+      introActiveLang = currentLang;
+      introActiveVideoId = videoId;
+      introActiveMode = 'api';
 
       introYtPlayer = new YT.Player(mountId, {
         host: 'https://www.youtube-nocookie.com',
@@ -398,11 +440,17 @@
         events: {
           onReady: (event) => {
             if (gen !== introRenderGen) return;
-            applyYoutubeLocale(event.target, lang, videoId);
+            applyYoutubeLocale(event.target, lang);
           },
           onApiChange: (event) => {
             if (gen !== introRenderGen) return;
-            applyYoutubeLocale(event.target, lang, videoId);
+            applyYoutubeLocale(event.target, lang);
+          },
+          onStateChange: (event) => {
+            if (gen !== introRenderGen) return;
+            if (event.data === YT.PlayerState.PLAYING) {
+              applyYoutubeLocale(event.target, lang);
+            }
           },
         },
       });

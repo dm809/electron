@@ -37,14 +37,16 @@ const SITE_CONFIG = {
   introVideo: {
     enabled: true,
     isShorts: true,
-    // RU / ES / UA — родная озвучка; EN — оригинал (0zbjmG7aUn8)
+    // RU / UA — отдельные шорты; ES / EN — 0zbjmG7aUn8 (ES: испанская дорожка через API)
     youtubeIds: {
       ru: 'WFA6X7T9AWM',
-      es: 'JUOfkTRGMSU',
+      es: '0zbjmG7aUn8',
       en: '0zbjmG7aUn8',
       uk: 'OApZFyOukuM',
     },
-    dubVideoId: '0zbjmG7aUn8', // только для EN, не fallback для других языков
+    dubVideoId: '0zbjmG7aUn8',
+    // Языки, где на dub-ролике принудительно включаем нужную озвучку
+    dubAudioLangs: ['es'],
   },
 
   // Ключевые пункты — синяя панель рядом с видео
