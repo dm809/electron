@@ -76,10 +76,10 @@ const SITE_CONFIG = {
 
   // Datos legales (LSSI / RGPD) — sustituir placeholders en páginas legales
   legal: {
-    businessName: '[Nombre completo del Autónomo / Empresa]',
-    nif: '[Mi NIF/NIE]',
-    address: '[Mi Dirección Física en España]',
-    privacyEmail: '[Mi Email]',
+    businessName: 'Dmytro Hordiienko',
+    nif: 'Y9550180L',
+    address: 'Calle Zarza 31, Colmenar, Málaga, España',
+    privacyEmail: 'gordienkodmytro9@gmail.com',
   },
 
   // Google Ads — вставь ID из ads.google.com → Herramientas → Conversiones
