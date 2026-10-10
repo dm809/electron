@@ -2,7 +2,26 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script>
+    (function () {
+      var BUILD = '61';
+      var KEY = 'elektron-site-build';
+      try {
+        if (localStorage.getItem(KEY) !== BUILD) {
+          localStorage.setItem(KEY, BUILD);
+          var url = new URL(window.location.href);
+          if (url.searchParams.get('_b') !== BUILD) {
+            url.searchParams.set('_b', BUILD);
+            window.location.replace(url.toString());
+          }
+        }
+      } catch (e) { /* private mode */ }
+    })();
+  </script>
   <meta name="description" content="">
   <meta name="robots" content="index, follow">
   <title></title>
@@ -470,7 +489,7 @@
           <a href="/politica-cookies/" data-legal-path="politica-cookies/">Política de Cookies</a>
           <a href="https://www.consumoresponde.es" class="footer__hojas" target="_blank" rel="noopener noreferrer" title="Hojas de reclamaciones — Consumo Responde">
             <!-- TODO: cartel/QR oficial Hoj@ (Consumo Responde) cuando esté disponible en el área de usuario -->
-            <img src="/images/hojas-reclamaciones-qr.png?v=60" alt="Código QR — Consumo Responde (Hoj@)" class="footer__hojas-qr" width="40" height="40" decoding="async" hidden onload="this.hidden=false" onerror="this.hidden=true">
+            <img src="/images/hojas-reclamaciones-qr.png?v=61" alt="Código QR — Consumo Responde" class="footer__hojas-qr" width="40" height="40" decoding="async" hidden onload="this.hidden=false" onerror="this.hidden=true">
             <span>Hojas de Reclamaciones</span>
           </a>
         </nav>

@@ -5,6 +5,9 @@
  */
 
 const SITE_CONFIG = {
+  /** Меняйте при каждом деплое — мобильные браузеры подтягивают новую версию */
+  siteBuild: 61,
+
   brandName: 'ELEKTRON',
   ownerName: 'Dmytro Hordiienko',
   tagline: 'interesantes ideas de dmitrii',
