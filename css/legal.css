@@ -1,0 +1,98 @@
+/* Páginas legales — legible y coherente con ELEKTRON */
+.legal-page {
+  position: relative;
+  z-index: 1;
+  padding: 48px 0 80px;
+}
+
+.legal-page__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 24px;
+  font-size: 0.9rem;
+  color: var(--accent);
+}
+
+.legal-page__back:hover {
+  text-decoration: underline;
+}
+
+.legal-doc {
+  max-width: 720px;
+  margin: 0 auto;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) + 4px);
+  padding: clamp(24px, 4vw, 48px);
+}
+
+.legal-doc h1 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+}
+
+.legal-doc__updated {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 28px;
+}
+
+.legal-doc h2 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 28px 0 12px;
+  color: var(--text);
+}
+
+.legal-doc p,
+.legal-doc li {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+.legal-doc ul {
+  padding-left: 1.25rem;
+  margin: 0 0 16px;
+}
+
+.legal-doc a {
+  color: var(--accent);
+}
+
+.legal-table-wrap {
+  overflow-x: auto;
+  margin: 16px 0 24px;
+}
+
+.legal-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.legal-table th,
+.legal-table td {
+  border: 1px solid var(--border);
+  padding: 10px 12px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.legal-table th {
+  background: rgba(6, 182, 212, 0.08);
+  color: var(--text);
+  font-weight: 600;
+}
+
+.legal-table td {
+  color: var(--text-muted);
+}
+
+.legal-doc .placeholder {
+  color: var(--accent);
+  font-weight: 500;
+}

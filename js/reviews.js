@@ -247,8 +247,13 @@
       const text = form.querySelector('#review-text').value.trim();
       const submitBtn = form.querySelector('.reviews__submit');
 
+      const privacy = form.querySelector('.privacy-consent-checkbox');
       if (!name || !text) {
         form.reportValidity();
+        return;
+      }
+      if (!privacy?.checked) {
+        privacy?.focus();
         return;
       }
 
@@ -266,6 +271,8 @@
         await submitReview(review);
         form.reset();
         resetStarRating();
+        const cbAfter = form.querySelector('.privacy-consent-checkbox');
+        if (cbAfter) cbAfter.checked = false;
 
         if (success) {
           success.hidden = false;
@@ -278,7 +285,8 @@
           errorEl.hidden = false;
         }
       } finally {
-        if (submitBtn) submitBtn.disabled = false;
+        const cb = form.querySelector('.privacy-consent-checkbox');
+        if (submitBtn) submitBtn.disabled = !cb?.checked;
       }
     });
   }

@@ -74,6 +74,14 @@ const SITE_CONFIG = {
   region: 'Andalucía, España',
   siteUrl: 'https://dmitrii-elektron.es/',
 
+  // Datos legales (LSSI / RGPD) — sustituir placeholders en páginas legales
+  legal: {
+    businessName: '[Nombre completo del Autónomo / Empresa]',
+    nif: '[Mi NIF/NIE]',
+    address: '[Mi Dirección Física en España]',
+    privacyEmail: '[Mi Email]',
+  },
+
   // Google Ads — вставь ID из ads.google.com → Herramientas → Conversiones
   // googleAdsId: 'AW-XXXXXXXXX'
   // googleAdsConversion: 'AW-XXXXXXXXX/AbCdEfGh'

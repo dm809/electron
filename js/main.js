@@ -262,6 +262,8 @@
     });
 
     updateLinks();
+    updateLegalLinks();
+    if (window.ElektronConsentForms) window.ElektronConsentForms.refreshLabels();
     renderHeaderPhones();
     renderSpeakTags();
     renderBrands();
@@ -273,6 +275,14 @@
       window.ReviewsModule.render();
       window.ReviewsModule.updateReviewPlaceholders();
     }
+  }
+
+  function updateLegalLinks() {
+    const base = siteBase();
+    document.querySelectorAll('[data-legal-path]').forEach((el) => {
+      const segment = el.dataset.legalPath || '';
+      el.href = `${base}${segment.replace(/^\//, '')}`;
+    });
   }
 
   function updateLinks() {
@@ -579,6 +589,71 @@
 
   window.gtag_report_conversion = gtagReportConversion;
 
+  function initContactForm() {
+    const form = document.getElementById('contact-form');
+    const success = document.getElementById('contact-success');
+    const errorEl = document.getElementById('contact-error');
+    if (!form || form.dataset.bound === '1') return;
+    form.dataset.bound = '1';
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const privacy = form.querySelector('.privacy-consent-checkbox');
+      if (!privacy?.checked) {
+        privacy?.focus();
+        return;
+      }
+
+      const name = form.querySelector('#contact-name')?.value.trim();
+      const email = form.querySelector('#contact-email-input')?.value.trim();
+      const message = form.querySelector('#contact-message')?.value.trim();
+      const submitBtn = form.querySelector('.contact__submit');
+      const notifyEmail = SITE_CONFIG.notifyEmail || SITE_CONFIG.email;
+
+      if (!name || !email || !message) {
+        form.reportValidity();
+        return;
+      }
+
+      if (errorEl) errorEl.hidden = true;
+      if (submitBtn) submitBtn.disabled = true;
+
+      try {
+        const res = await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(notifyEmail)}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify({
+            _subject: 'Contacto web ELEKTRON',
+            _template: 'table',
+            _captcha: 'false',
+            name,
+            email,
+            message,
+            'Privacidad': 'Aceptada',
+            'Fecha': new Date().toLocaleString('es-ES'),
+          }),
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (String(data.success) !== 'true') throw new Error('FormSubmit rejected');
+        form.reset();
+        const cbAfter = form.querySelector('.privacy-consent-checkbox');
+        if (cbAfter) cbAfter.checked = false;
+        if (submitBtn) submitBtn.disabled = true;
+        if (success) {
+          success.hidden = false;
+          setTimeout(() => { success.hidden = true; }, 8000);
+        }
+      } catch (err) {
+        console.error('Contact submit error:', err);
+        if (errorEl) errorEl.hidden = false;
+      } finally {
+        const cb = form.querySelector('.privacy-consent-checkbox');
+        if (submitBtn) submitBtn.disabled = !cb?.checked;
+      }
+    });
+  }
+
   function initGoogleAds() {
     if (!SITE_CONFIG.googleAdsConversion) return;
 
@@ -697,8 +772,13 @@
   initMobileMenu();
   initReveal();
   initStickyCta();
+  initContactForm();
   loadHeroPhoto();
   applyTranslations();
-  initGoogleAds();
+  if (window.ElektronCookieConsent?.hasMarketingConsent()) {
+    initGoogleAds();
+  } else {
+    document.addEventListener('elektron:marketing-consent', initGoogleAds, { once: true });
+  }
   if (window.ReviewsModule) window.ReviewsModule.init();
 })();
