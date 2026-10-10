@@ -1784,6 +1784,30 @@ a.partner-card:hover .partner-card__logo img {
   color: var(--accent);
 }
 
+.footer__hojas {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: var(--accent) !important;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  border-radius: 8px;
+  padding: 4px 10px;
+  margin-left: 4px;
+}
+
+.footer__hojas:hover {
+  border-color: var(--accent);
+  background: rgba(56, 189, 248, 0.08);
+}
+
+.footer__hojas-qr {
+  flex-shrink: 0;
+  border-radius: 4px;
+  object-fit: contain;
+  background: #fff;
+}
+
 .footer__social {
   display: flex;
   flex-wrap: wrap;
