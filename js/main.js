@@ -256,6 +256,14 @@
     document.title = t('metaTitle');
     const metaDesc = document.querySelector('meta[name="description"]');
     if (metaDesc) metaDesc.content = t('metaDescription');
+    const ogTitle = document.querySelector('meta[property="og:title"]');
+    const ogDesc = document.querySelector('meta[property="og:description"]');
+    const twTitle = document.querySelector('meta[name="twitter:title"]');
+    const twDesc = document.querySelector('meta[name="twitter:description"]');
+    if (ogTitle) ogTitle.content = t('metaTitle');
+    if (ogDesc) ogDesc.content = t('metaDescription');
+    if (twTitle) twTitle.content = t('metaTitle');
+    if (twDesc) twDesc.content = t('metaDescription');
 
     document.querySelectorAll('.lang-switch__btn').forEach((btn) => {
       btn.classList.toggle('active', btn.dataset.lang === currentLang);
