@@ -76,10 +76,13 @@ const SITE_CONFIG = {
 
   // Datos legales (LSSI / RGPD) — sustituir placeholders en páginas legales
   legal: {
-    businessName: 'Dmytro Hordiienko',
+    businessName: 'DMYTRO HORDIIENKO',
     nif: 'Y9550180L',
-    address: 'Calle Zarza 31, Colmenar, Málaga, España',
+    address: 'Calle Zarza, Num 31, CP 29170, Colmenar, Málaga, España',
     privacyEmail: 'gordienkodmytro9@gmail.com',
+    activity: 'Reparación de artículos electrodomésticos',
+    iae: '691.1',
+    province: 'Málaga',
   },
 
   // Google Ads — вставь ID из ads.google.com → Herramientas → Conversiones

@@ -38,7 +38,14 @@
     }
 
     const textEl = wrap.querySelector('.form-consent__text');
-    if (textEl) textEl.innerHTML = getConsentLabelHtml();
+    if (textEl) {
+      if (textEl.dataset.consentExact === '1') {
+        const url = privacyUrl();
+        textEl.innerHTML = `He leído y acepto la <a href="${url}" target="_blank" rel="noopener noreferrer">Política de Privacidad</a>`;
+      } else {
+        textEl.innerHTML = getConsentLabelHtml();
+      }
+    }
 
     const checkbox = wrap.querySelector('.privacy-consent-checkbox');
     const submitBtn = form.querySelector('[type="submit"]');
@@ -59,6 +66,11 @@
 
   function refreshLabels() {
     document.querySelectorAll('form[data-requires-privacy] .form-consent__text').forEach((el) => {
+      if (el.dataset.consentExact === '1') {
+        const url = privacyUrl();
+        el.innerHTML = `He leído y acepto la <a href="${url}" target="_blank" rel="noopener noreferrer">Política de Privacidad</a>`;
+        return;
+      }
       el.innerHTML = getConsentLabelHtml();
     });
   }

@@ -10,6 +10,8 @@
       nif: legal.nif,
       address: legal.address,
       email: legal.privacyEmail,
+      activity: legal.activity,
+      iae: legal.iae,
     };
 
     Object.entries(map).forEach(([key, value]) => {

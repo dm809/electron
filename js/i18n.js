@@ -157,7 +157,7 @@ const I18N = {
     cookieDesc: 'Usamos cookies técnicas y, solo si acepta, analíticas/marketing (Google Ads).',
     cookieAcceptAll: 'Aceptar todas',
     cookieReject: 'Rechazar analíticas',
-    cookieConfigure: 'Política de Cookies',
+    cookieConfigure: 'Configurar',
     waMessage: 'Здравствуйте! Нужна помощь с ремонтом.',
   },
 
@@ -319,7 +319,7 @@ const I18N = {
     cookieDesc: 'Usamos cookies técnicas necesarias y, solo si usted acepta, cookies analíticas y de marketing (Google Ads). Puede rechazar las no esenciales o consultar la Política de Cookies.',
     cookieAcceptAll: 'Aceptar todas',
     cookieReject: 'Rechazar analíticas',
-    cookieConfigure: 'Política de Cookies',
+    cookieConfigure: 'Configurar',
     waMessage: '¡Hola! Necesito ayuda con una reparación.',
   },
 
@@ -643,7 +643,7 @@ const I18N = {
     cookieDesc: 'Cookies técnicas y, si acepta, analíticas/marketing (Google Ads).',
     cookieAcceptAll: 'Aceptar todas',
     cookieReject: 'Rechazar analíticas',
-    cookieConfigure: 'Política de Cookies',
+    cookieConfigure: 'Configurar',
     waMessage: 'Доброго дня! Потрібна допомога з ремонтом.',
   },
 };
