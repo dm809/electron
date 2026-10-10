@@ -538,19 +538,23 @@
     const el = document.getElementById('schema-json');
     if (!el) return;
 
+    const legal = SITE_CONFIG.legal || {};
     const schema = {
       '@context': 'https://schema.org',
       '@type': 'LocalBusiness',
       name: SITE_CONFIG.brandName,
-      founder: { '@type': 'Person', name: SITE_CONFIG.ownerName },
+      legalName: legal.businessName || SITE_CONFIG.ownerName,
+      founder: { '@type': 'Person', name: legal.businessName || SITE_CONFIG.ownerName },
       description: t('metaDescription'),
-      telephone: (SITE_CONFIG.phoneContacts || []).map((c) => c.phone),
-      email: SITE_CONFIG.email,
+      telephone: legal.phone || (SITE_CONFIG.phoneContacts || []).map((c) => c.phone)[0],
+      email: legal.privacyEmail || SITE_CONFIG.email,
       areaServed: SITE_CONFIG.region,
       address: {
         '@type': 'PostalAddress',
-        addressLocality: SITE_CONFIG.city,
-        addressRegion: 'Andalucía',
+        streetAddress: legal.street || '',
+        postalCode: legal.postalCode || '',
+        addressLocality: legal.locality || SITE_CONFIG.city,
+        addressRegion: legal.province || 'Málaga',
         addressCountry: 'ES',
       },
       url: window.location.href,

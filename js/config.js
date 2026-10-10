@@ -6,7 +6,7 @@
 
 const SITE_CONFIG = {
   brandName: 'ELEKTRON',
-  ownerName: 'Dmitrii',
+  ownerName: 'Dmytro Hordiienko',
   tagline: 'interesantes ideas de dmitrii',
 
   phone: '+34643292197',
@@ -77,12 +77,20 @@ const SITE_CONFIG = {
   // Datos legales (LSSI / RGPD) — sustituir placeholders en páginas legales
   legal: {
     businessName: 'DMYTRO HORDIIENKO',
+    officialName: 'HORDIIENKO, DMYTRO',
     nif: 'Y9550180L',
+    street: 'Calle Zarza, Num 31',
+    postalCode: '29170',
+    locality: 'Colmenar',
+    province: 'Málaga',
     address: 'Calle Zarza, Num 31, CP 29170, Colmenar, Málaga, España',
     privacyEmail: 'gordienkodmytro9@gmail.com',
+    phone: '+34 643 292 197',
     activity: 'Reparación de artículos electrodomésticos',
     iae: '691.1',
-    province: 'Málaga',
+    iaeRaw: '6911',
+    altaCensoDate: '26/06/2026',
+    modelo036Ref: '2026C3650180129Y',
   },
 
   // Google Ads — вставь ID из ads.google.com → Herramientas → Conversiones

@@ -7,8 +7,8 @@
   <title>Política de Privacidad · ELEKTRON</title>
   <meta name="description" content="Política de privacidad RGPD y LOPDGDD — ELEKTRON, DMYTRO HORDIIENKO, Málaga.">
   <meta name="theme-color" content="#0a0e17">
-  <link rel="stylesheet" href="/css/style.css?v=55">
-  <link rel="stylesheet" href="/css/legal.css?v=55">
+  <link rel="stylesheet" href="/css/style.css?v=56">
+  <link rel="stylesheet" href="/css/legal.css?v=56">
   <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32.png">
 </head>
 <body>
@@ -29,6 +29,7 @@
           <li><strong>Domicilio fiscal:</strong> <span data-legal="address">Calle Zarza, Num 31, CP 29170, Colmenar, Málaga, España</span></li>
           <li><strong>Actividad:</strong> <span data-legal="activity">Reparación de artículos electrodomésticos</span> (IAE <span data-legal="iae">691.1</span>)</li>
           <li><strong>Email para ejercicio de derechos:</strong> <span data-legal="email"><a href="mailto:gordienkodmytro9@gmail.com">gordienkodmytro9@gmail.com</a></span></li>
+          <li><strong>Teléfono:</strong> <span data-legal="phone"><a href="tel:+34643292197">+34 643 292 197</a></span></li>
         </ul>
 
         <h2>2. Finalidades del tratamiento</h2>
@@ -53,8 +54,17 @@
         <h2>5. Conservación</h2>
         <p>Los datos se conservan mientras exista una relación comercial o durante los plazos necesarios para atender reclamaciones y obligaciones legales. Las reseñas publicadas permanecerán visibles mientras se mantengan en el sitio, salvo solicitud de supresión cuando proceda.</p>
 
-        <h2>6. Destinatarios y encargados</h2>
-        <p>Los datos pueden ser tratados por proveedores de alojamiento web, correo, envío de formularios (FormSubmit) o mensajería, actuando como encargados del tratamiento cuando corresponda. Algunos proveedores pueden estar fuera del EEE; en ese caso se aplicarán garantías previstas en el RGPD.</p>
+        <h2>6. Destinatarios y encargados del tratamiento</h2>
+        <p>Los datos pueden ser comunicados o accedidos por los siguientes proveedores, en calidad de encargados o responsables independientes según el servicio:</p>
+        <ul>
+          <li><strong>GitHub / GitHub Pages</strong> — alojamiento del sitio web (repositorio <code>dm809/electron</code>).</li>
+          <li><strong>FormSubmit</strong> — envío de mensajes del formulario de contacto y notificaciones de reseñas por correo.</li>
+          <li><strong>Supabase</strong> — almacenamiento y moderación de reseñas (panel interno), cuando el servicio está activo.</li>
+          <li><strong>Google</strong> (Google Ads / Analytics) — solo si el usuario acepta cookies analíticas/marketing en el banner.</li>
+          <li><strong>YouTube</strong> (Google) — reproducción de vídeos embebidos; pueden generarse cookies de terceros al interactuar con el reproductor.</li>
+          <li><strong>WhatsApp / Meta</strong> — mensajería si el usuario contacta mediante el enlace correspondiente (fuera del formulario web).</li>
+        </ul>
+        <p>Algunos proveedores pueden estar fuera del Espacio Económico Europeo; en tal caso se aplicarán las garantías previstas en el RGPD (cláusulas tipo u otras medidas).</p>
 
         <h2>7. Derechos del interesado (ARCO y RGPD)</h2>
         <p>Puede ejercer los siguientes derechos:</p>
@@ -75,6 +85,59 @@
 
         <h2>10. Cambios</h2>
         <p>Esta política puede actualizarse. Se recomienda revisarla periódicamente.</p>
+
+        <h2>11. Registro de actividades de tratamiento (resumen RAT)</h2>
+        <p>Resumen del registro interno exigido por el RGPD para las actividades principales de este sitio:</p>
+        <div class="legal-table-wrap">
+          <table class="legal-table">
+            <thead>
+              <tr>
+                <th>Tratamiento</th>
+                <th>Datos</th>
+                <th>Finalidad</th>
+                <th>Base legal</th>
+                <th>Plazo conservación</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Formulario de contacto</td>
+                <td>Nombre, email, mensaje</td>
+                <td>Atender consultas y presupuestos</td>
+                <td>Contrato / precontrato</td>
+                <td>Hasta resolución + plazos legales</td>
+              </tr>
+              <tr>
+                <td>Reseñas de clientes</td>
+                <td>Nombre, valoración, texto</td>
+                <td>Publicar opiniones tras moderación</td>
+                <td>Consentimiento</td>
+                <td>Mientras estén publicadas o hasta supresión</td>
+              </tr>
+              <tr>
+                <td>Correo / WhatsApp / teléfono</td>
+                <td>Datos facilitados por el usuario</td>
+                <td>Gestión comercial de reparaciones</td>
+                <td>Contrato / precontrato</td>
+                <td>Relación comercial + obligaciones fiscales</td>
+              </tr>
+              <tr>
+                <td>Cookies analíticas/marketing</td>
+                <td>Identificadores online, uso del sitio</td>
+                <td>Medición publicitaria (Google Ads)</td>
+                <td>Consentimiento</td>
+                <td>Según política de cookies / proveedor</td>
+              </tr>
+              <tr>
+                <td>Preferencias técnicas</td>
+                <td>Idioma, consentimiento cookies</td>
+                <td>Funcionamiento del sitio</td>
+                <td>Interés legítimo / necesidad técnica</td>
+                <td>localStorage hasta borrado</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </article>
     </div>
   </main>
@@ -101,8 +164,8 @@
       </nav>
     </div>
   </footer>
-  <script src="/js/config.js?v=55"></script>
-  <script src="/js/legal-page.js?v=55"></script>
-  <script src="/js/cookie-consent.js?v=55"></script>
+  <script src="/js/config.js?v=56"></script>
+  <script src="/js/legal-page.js?v=56"></script>
+  <script src="/js/cookie-consent.js?v=56"></script>
 </body>
 </html>
