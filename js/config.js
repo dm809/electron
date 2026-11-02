@@ -6,7 +6,7 @@
 
 const SITE_CONFIG = {
   /** Меняйте при каждом деплое — мобильные браузеры подтягивают новую версию */
-  siteBuild: 64,
+  siteBuild: 65,
 
   brandName: 'ELEKTRON',
   ownerName: 'Dmytro Hordiienko',

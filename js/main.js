@@ -240,6 +240,24 @@
     return `https://wa.me/${SITE_CONFIG.whatsappPhone}?text=${encodeURIComponent(msg)}`;
   }
 
+  /** Каждая часть заголовка — отдельный .mark-highlight (иначе на мобильных «Ремонт» / «Reparación de» без фона). */
+  function buildHeroTitleHtml() {
+    const template = t('heroTitle');
+    const highlight = t('heroHighlight');
+    const token = '{highlight}';
+    const idx = template.indexOf(token);
+    if (idx === -1) {
+      return `<span class="mark-highlight">${template}</span>`;
+    }
+    const before = template.slice(0, idx).trim();
+    const after = template.slice(idx + token.length).trim();
+    let html = '';
+    if (before) html += `<span class="mark-highlight">${before}</span> `;
+    html += `<span class="mark-highlight">${highlight}</span>`;
+    if (after) html += ` <span class="mark-highlight">${after}</span>`;
+    return html;
+  }
+
   function applyTranslations() {
     document.documentElement.lang = currentLang;
 
@@ -249,8 +267,7 @@
 
     const heroTitle = document.getElementById('hero-title');
     if (heroTitle) {
-      const line = t('heroTitle').replace('{highlight}', t('heroHighlight'));
-      heroTitle.innerHTML = `<span class="mark-highlight">${line}</span>`;
+      heroTitle.innerHTML = buildHeroTitleHtml();
     }
 
     document.title = t('metaTitle');

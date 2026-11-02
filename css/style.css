@@ -459,6 +459,13 @@ body {
   -webkit-box-decoration-break: clone;
 }
 
+.hero__title .mark-highlight {
+  display: inline;
+  line-height: 1.25;
+  word-break: normal;
+  overflow-wrap: normal;
+}
+
 .hero__subtitle {
   color: var(--text-muted);
   font-size: 1.1rem;
