@@ -249,8 +249,8 @@
 
     const heroTitle = document.getElementById('hero-title');
     if (heroTitle) {
-      const highlight = `<span class="mark-highlight">${t('heroHighlight')}</span>`;
-      heroTitle.innerHTML = t('heroTitle').replace('{highlight}', highlight);
+      const line = t('heroTitle').replace('{highlight}', t('heroHighlight'));
+      heroTitle.innerHTML = `<span class="mark-highlight">${line}</span>`;
     }
 
     document.title = t('metaTitle');
